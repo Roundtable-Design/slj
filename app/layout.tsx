@@ -6,6 +6,7 @@ import {
   Source_Serif_4,
 } from "next/font/google";
 import "./globals.css";
+import { AuthSessionProvider } from "@/components/AuthSessionProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { COURSE_TITLE } from "@/lib/site-branding";
 
@@ -49,7 +50,9 @@ export default function RootLayout({
       className={`${cormorant.variable} ${sourceSerif.variable} ${literata.variable} ${manrope.variable}`}
     >
       <body className="min-h-screen antialiased">
-        <ThemeProvider>{children}</ThemeProvider>
+        <AuthSessionProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );

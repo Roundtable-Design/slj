@@ -47,8 +47,9 @@ jobs:
       - name: Build
         run: pnpm build
         env:
-          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.E
+          AUTH_SECRET: ci-build-secret-not-for-production
+          AUTH_URL: http://localhost:3000
+          AUTH_TRUST_HOST: "true"
 
       - name: Install Playwright browser
         run: pnpm exec playwright install chromium --with-deps
@@ -58,5 +59,7 @@ jobs:
         env:
           CI: true
           PLAYWRIGHT_PORT: 3010
-          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.E
+          AUTH_SECRET: ci-build-secret-not-for-production
+          AUTH_URL: http://127.0.0.1:3010
+          AUTH_TRUST_HOST: "true"
+          AUTH_DEV_LOGIN: "1"

@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { updateGroupSharedNotes } from "@/lib/groups";
+import { actionUpdateGroupSharedNotes } from "@/lib/actions/data";
 
 const DEBOUNCE_MS = 600;
 
@@ -14,7 +13,9 @@ export function GroupSharedNotesEditor({
   initialValue: string;
 }) {
   const [value, setValue] = useState(initialValue);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveStatus, setSaveStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedRef = useRef(initialValue);
@@ -29,8 +30,7 @@ export function GroupSharedNotesEditor({
       if (text === lastSavedRef.current) return;
       setSaveStatus("saving");
       setErrorMessage(null);
-      const supabase = createClient();
-      updateGroupSharedNotes(supabase, groupId, text)
+      actionUpdateGroupSharedNotes(groupId, text)
         .then(() => {
           lastSavedRef.current = text;
           setSaveStatus("saved");
@@ -38,7 +38,9 @@ export function GroupSharedNotesEditor({
         })
         .catch((err) => {
           setSaveStatus("error");
-          setErrorMessage(err instanceof Error ? err.message : "Failed to save");
+          setErrorMessage(
+            err instanceof Error ? err.message : "Failed to save"
+          );
         });
     },
     [groupId]
@@ -57,7 +59,10 @@ export function GroupSharedNotesEditor({
 
   return (
     <div className="space-y-2">
-      <label htmlFor="shared-notes" className="block text-sm font-medium text-[var(--slj-text)]">
+      <label
+        htmlFor="shared-notes"
+        className="block text-sm font-medium text-[var(--slj-text)]"
+      >
         Group notes (shared with all members)
       </label>
       <textarea
@@ -72,9 +77,7 @@ export function GroupSharedNotesEditor({
         {saveStatus === "saving" && (
           <span className="slj-faint">Saving...</span>
         )}
-        {saveStatus === "saved" && (
-          <span className="slj-faint">Saved</span>
-        )}
+        {saveStatus === "saved" && <span className="slj-faint">Saved</span>}
         {saveStatus === "error" && errorMessage && (
           <span className="text-[var(--slj-text)]" role="alert">
             {errorMessage}

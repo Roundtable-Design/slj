@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useSession } from "next-auth/react";
+import type { Note } from "@/lib/notes";
 import {
-  fetchNotesForBlocks,
-  insertNote,
-  updateNote,
-  deleteNote,
-  type Note,
-} from "@/lib/notes";
-import { upsertProgress } from "@/lib/progress";
+  actionFetchNotesForBlocks,
+  actionInsertNote,
+  actionUpdateNote,
+  actionDeleteNote,
+  actionUpsertProgress,
+} from "@/lib/actions/data";
 import type { Chapter } from "@/lib/content";
 import { headingTextMatchesDisplayTitle } from "@/lib/content/display";
 import { buildReaderBlockNodes } from "@/components/buildReaderBlocks";
@@ -30,11 +30,14 @@ export function FullBookReader({
   blockIds,
   blockIdToLabel,
 }: FullBookReaderProps) {
-  const [user, setUser] = useState<{ id: string } | null>(null);
+  const { data: session } = useSession();
+  const user = useMemo(
+    () => (session?.user ? { id: session.user.id } : null),
+    [session?.user]
+  );
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
-  const supabase = createClient();
 
   const blockIdToSectionId = useMemo(() => {
     const map = new Map<string, string>();
@@ -75,27 +78,14 @@ export function FullBookReader({
 
     setLoading(true);
     try {
-      const data = await fetchNotesForBlocks(supabase, blockIds);
+      const data = await actionFetchNotesForBlocks(blockIds);
       setNotes(data);
     } catch {
       setNotes([]);
     } finally {
       setLoading(false);
     }
-  }, [user, blockIds, supabase]);
-
-  useEffect(() => {
-    let mounted = true;
-    supabase.auth.getUser().then(({ data: { user: authUser } }) => {
-      if (mounted) {
-        setUser(authUser ? { id: authUser.id } : null);
-      }
-    });
-
-    return () => {
-      mounted = false;
-    };
-  }, [supabase]);
+  }, [user, blockIds]);
 
   useEffect(() => {
     if (!user) {
@@ -136,41 +126,41 @@ export function FullBookReader({
       setActiveBlockId(blockId);
       const sectionId = blockIdToSectionId.get(blockId);
       if (sectionId) {
-        upsertProgress(supabase, sectionId, { last_block_id: blockId }).catch(
+        actionUpsertProgress(sectionId, { last_block_id: blockId }).catch(
           () => {}
         );
       }
     },
-    [user, blockIdToSectionId, supabase]
+    [user, blockIdToSectionId]
   );
 
   const handleInsertNote = useCallback(
     async (blockId: string, body: string) => {
-      await insertNote(supabase, blockId, body);
+      await actionInsertNote(blockId, body);
       const sectionId = blockIdToSectionId.get(blockId);
       if (sectionId) {
-        await upsertProgress(supabase, sectionId, { last_block_id: blockId });
+        await actionUpsertProgress(sectionId, { last_block_id: blockId });
       }
       setActiveBlockId(null);
       await refetch();
     },
-    [supabase, refetch, blockIdToSectionId]
+    [refetch, blockIdToSectionId]
   );
 
   const handleUpdateNote = useCallback(
     async (id: string, body: string) => {
-      await updateNote(supabase, id, body);
+      await actionUpdateNote(id, body);
       await refetch();
     },
-    [supabase, refetch]
+    [refetch]
   );
 
   const handleDelete = useCallback(
     async (id: string) => {
-      await deleteNote(supabase, id);
+      await actionDeleteNote(id);
       await refetch();
     },
-    [supabase, refetch]
+    [refetch]
   );
 
   const handleCancelComposer = useCallback(() => {

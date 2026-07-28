@@ -1,4 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
+import { config as loadEnv } from "dotenv";
+
+loadEnv({ path: ".env.local" });
 
 const port = process.env.PLAYWRIGHT_PORT ?? "3000";
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${port}`;
@@ -32,11 +35,7 @@ export default defineConfig({
         env: {
           ...process.env,
           NEXT_PUBLIC_PLAYWRIGHT_E2E: "1",
-          NEXT_PUBLIC_SUPABASE_URL:
-            process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://placeholder.supabase.co",
-          NEXT_PUBLIC_SUPABASE_ANON_KEY:
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.E",
+          AUTH_DEV_LOGIN: "1",
         },
       },
 });

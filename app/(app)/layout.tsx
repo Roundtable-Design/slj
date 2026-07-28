@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/auth";
 import { AppNav } from "@/components/AppNav";
 import { ContentRevisionPoller } from "@/components/dev/ContentRevisionPoller";
 import { ReturnToReadingButton } from "@/components/ReturnToReadingButton";
@@ -11,11 +11,7 @@ export default async function AppShellLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const session = await auth();
   const navChapters = buildNavChapters();
 
   return (
@@ -24,7 +20,7 @@ export default async function AppShellLayout({
       <ScrollReturnManager />
       <ReturnToReadingButton />
       <BackToSearchButton />
-      <AppNav userEmail={user?.email} chapters={navChapters} />
+      <AppNav userEmail={session?.user?.email} chapters={navChapters} />
       <main
         id="app-main-scroll"
         className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pb-6 pt-16 md:px-8 md:py-8 lg:px-10 lg:py-10"

@@ -1,17 +1,14 @@
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { buildSignInHref } from "@/lib/navigation";
 import { PreferencesForm } from "./PreferencesForm";
-import { EmailChangeForm } from "./EmailChangeForm";
 import { PageShell } from "@/components/ui/surfaces";
 import { ThemeToggle } from "./ThemeToggle";
 import { ReaderFontToggle } from "./ReaderFontToggle";
 
 export default async function PreferencesPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (!user) {
     redirect(buildSignInHref("/preferences"));
@@ -56,8 +53,7 @@ export default async function PreferencesPage() {
         <h2 className="mb-2 font-sans text-sm font-medium text-[var(--slj-text)]">
           Email
         </h2>
-        <p className="slj-muted mb-4 font-sans text-sm">{user.email}</p>
-        <EmailChangeForm />
+        <p className="slj-muted font-sans text-sm">{user.email}</p>
       </section>
 
       <section className="slj-card p-4">

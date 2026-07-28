@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { joinGroupByCode } from "@/lib/groups";
+import { actionJoinGroupByCode } from "@/lib/actions/data";
 
 export function JoinGroupByCode({ code }: { code: string }) {
   const router = useRouter();
@@ -14,8 +13,7 @@ export function JoinGroupByCode({ code }: { code: string }) {
   useEffect(() => {
     if (!code.trim() || status !== "idle") return;
     setStatus("joining");
-    const supabase = createClient();
-    joinGroupByCode(supabase, code)
+    actionJoinGroupByCode(code)
       .then((groupId) => {
         setStatus("done");
         router.replace(`/groups/${groupId}`);

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/auth";
 import { JoinGroupByCode } from "@/components/JoinGroupByCode";
 import { PageShell } from "@/components/ui/surfaces";
 import { buildSignInHref } from "@/lib/navigation";
@@ -15,12 +15,9 @@ export default async function GroupJoinPage({
     redirect("/groups");
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
 
-  if (!user) {
+  if (!session?.user) {
     const signInUrl = buildSignInHref(
       `/groups/join?code=${encodeURIComponent(code)}`
     );

@@ -3,19 +3,17 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useSession } from "next-auth/react";
+import type { Note } from "@/lib/notes";
 import {
-  fetchNotesForBlocks,
-  insertNote,
-  updateNote,
-  deleteNote,
-  type Note,
-} from "@/lib/notes";
-import {
-  upsertProgress,
-  upsertChapterProgress,
-  getChapterProgressForUser,
-} from "@/lib/progress";
+  actionFetchNotesForBlocks,
+  actionInsertNote,
+  actionUpdateNote,
+  actionDeleteNote,
+  actionUpsertProgress,
+  actionUpsertChapterProgress,
+  actionGetChapterProgress,
+} from "@/lib/actions/data";
 import {
   isMissingChapterProgressTable,
   progressErrorMessage,
@@ -69,7 +67,11 @@ export function CourseReader({
     [isInteractive, blockIds]
   );
 
-  const [user, setUser] = useState<{ id: string } | null>(null);
+  const { data: session } = useSession();
+  const user = useMemo(
+    () => (session?.user ? { id: session.user.id } : null),
+    [session?.user]
+  );
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [chapterComplete, setChapterComplete] = useState(false);
@@ -77,7 +79,6 @@ export function CourseReader({
   const [completeError, setCompleteError] = useState<string | null>(null);
   const [progressSetupMissing, setProgressSetupMissing] = useState(false);
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
-  const supabase = createClient();
   const router = useRouter();
 
   const sectionIds = useMemo(
@@ -131,24 +132,14 @@ export function CourseReader({
     }
     setLoading(true);
     try {
-      const data = await fetchNotesForBlocks(supabase, effectiveBlockIds);
+      const data = await actionFetchNotesForBlocks(effectiveBlockIds);
       setNotes(data);
     } catch {
       setNotes([]);
     } finally {
       setLoading(false);
     }
-  }, [user, effectiveBlockIds, supabase]);
-
-  useEffect(() => {
-    let mounted = true;
-    supabase.auth.getUser().then(({ data: { user: u } }) => {
-      if (mounted) setUser(u ? { id: u.id } : null);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, [supabase]);
+  }, [user, effectiveBlockIds]);
 
   useEffect(() => {
     if (!user) {
@@ -164,7 +155,7 @@ export function CourseReader({
     let mounted = true;
     (async () => {
       try {
-        const chapterProgressRows = await getChapterProgressForUser(supabase);
+        const chapterProgressRows = await actionGetChapterProgress();
         if (!mounted) return;
         const chapterRow = chapterProgressRows.find(
           (r) => r.chapter_id === chapterId && r.completed_at != null
@@ -173,7 +164,7 @@ export function CourseReader({
         const firstSectionId = sectionIds[0];
         const firstBlockId = sections[0]?.blocks[0]?.block_id;
         if (firstSectionId && firstBlockId) {
-          await upsertProgress(supabase, firstSectionId, {
+          await actionUpsertProgress(firstSectionId, {
             last_block_id: firstBlockId,
           });
         }
@@ -186,7 +177,7 @@ export function CourseReader({
     return () => {
       mounted = false;
     };
-  }, [isInteractive, user, sectionIds, chapterId, sections, supabase]);
+  }, [isInteractive, user, sectionIds, chapterId, sections]);
 
   useEffect(() => {
     if (!activeBlockId) return;
@@ -206,7 +197,7 @@ export function CourseReader({
     setSavingComplete(true);
     setCompleteError(null);
     try {
-      await upsertChapterProgress(supabase, chapterId, {
+      await actionUpsertChapterProgress(chapterId, {
         completed_at: new Date().toISOString(),
       });
       setChapterComplete(true);
@@ -221,7 +212,7 @@ export function CourseReader({
     } finally {
       setSavingComplete(false);
     }
-  }, [user, chapterId, supabase, savingComplete, router]);
+  }, [user, chapterId, savingComplete, router]);
 
   const handleAddOrEditNote = useCallback(
     (block_id: string) => {
@@ -229,41 +220,41 @@ export function CourseReader({
       setActiveBlockId(block_id);
       const sectionId = blockIdToSectionId.get(block_id);
       if (sectionId) {
-        upsertProgress(supabase, sectionId, { last_block_id: block_id }).catch(
+        actionUpsertProgress(sectionId, { last_block_id: block_id }).catch(
           () => {}
         );
       }
     },
-    [user, blockIdToSectionId, supabase]
+    [user, blockIdToSectionId]
   );
 
   const handleInsertNote = useCallback(
     async (block_id: string, body: string) => {
-      await insertNote(supabase, block_id, body);
+      await actionInsertNote(block_id, body);
       const sectionId = blockIdToSectionId.get(block_id);
       if (sectionId) {
-        await upsertProgress(supabase, sectionId, { last_block_id: block_id });
+        await actionUpsertProgress(sectionId, { last_block_id: block_id });
       }
       setActiveBlockId(null);
       await refetch();
     },
-    [supabase, refetch, blockIdToSectionId]
+    [refetch, blockIdToSectionId]
   );
 
   const handleUpdateNote = useCallback(
     async (id: string, body: string) => {
-      await updateNote(supabase, id, body);
+      await actionUpdateNote(id, body);
       await refetch();
     },
-    [supabase, refetch]
+    [refetch]
   );
 
   const handleDelete = useCallback(
     async (id: string) => {
-      await deleteNote(supabase, id);
+      await actionDeleteNote(id);
       await refetch();
     },
-    [supabase, refetch]
+    [refetch]
   );
 
   const handleCancelComposer = useCallback(() => {
@@ -386,8 +377,8 @@ export function CourseReader({
           {progressSetupMissing ? (
             <p className="slj-muted mb-3 font-sans text-sm" role="status">
               Progress tracking is not set up on the database yet. Apply the{" "}
-              <code className="text-xs">chapter_progress</code> migration in
-              Supabase (see README).
+              <code className="text-xs">chapter_progress</code> migration via
+              Neon/database migrations (see README).
             </p>
           ) : null}
           {completeError ? (

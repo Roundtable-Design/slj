@@ -16,22 +16,31 @@
     "watch:content": "tsx scripts/watch-content.ts",
     "ingest-from-zip": "tsx scripts/ingest-from-zip.ts",
     "lint:content": "tsx scripts/lint-content.ts",
-    "db:push": "bash scripts/apply-chapter-progress.sh"
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.8.0",
-    "@supabase/supabase-js": "^2.96.0",
+    "@auth/drizzle-adapter": "^1.11.3",
+    "@neondatabase/serverless": "^1.1.0",
+    "drizzle-orm": "^0.45.2",
     "lucide-react": "^0.577.0",
     "next": "^15.0.0",
+    "next-auth": "5.0.0-beta.32",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "resend": "^6.18.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.50.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.20",
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.0.0",
     "jest": "^29.7.0",
@@ -40,7 +49,6 @@
     "tailwindcss": "^3.4.15",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
-    "yauzl": "^3.2.0",
-    "@playwright/test": "^1.50.0"
+    "yauzl": "^3.2.0"
   }
 }

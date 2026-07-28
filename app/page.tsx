@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/auth";
 import { AppNav } from "@/components/AppNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { TalksFromTheWarehouseLink } from "@/components/TalksFromTheWarehouseLink";
@@ -12,17 +12,14 @@ import {
 } from "@/lib/site-branding";
 
 export default async function LandingPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
   if (user) {
     return (
       <div className="flex h-screen overflow-hidden bg-[var(--slj-bg)] text-[var(--slj-text)]">
         <AppNav userEmail={user.email} chapters={buildNavChapters()} />
         <main className="min-h-0 min-w-0 flex-1 overflow-auto px-4 pb-6 pt-16 md:px-8 md:py-8 lg:px-10 lg:py-10">
-          {/* Authenticated home: progress dashboard */}
           <ProgressDashboard />
         </main>
       </div>

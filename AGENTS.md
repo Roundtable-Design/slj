@@ -2,7 +2,7 @@
 
 ## Stack (boring + durable)
 - Next.js (App Router) + TypeScript
-- Supabase (Auth: magic link email, Postgres, RLS)
+- Neon Postgres + Auth.js (email magic link via Resend) + Drizzle
 - Tailwind CSS (minimal, typography-first)
 - Hosting: Vercel
 - Content: Markdown in repo + stable block IDs
@@ -41,11 +41,13 @@ Users can:
 Create `.env.local` from `.env.example`.
 
 Required:
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `DATABASE_URL` (Neon pooled)
+- `AUTH_SECRET`
+- `AUTH_RESEND_KEY` (Resend API key for magic links)
 
-Server-only (only if needed later):
-- `SUPABASE_SERVICE_ROLE_KEY` (never in client)
+Optional:
+- `AUTH_E2E_SECRET` — Credentials test sign-in for local/staging
+- `STAGING_BASIC_AUTH_USER` / `STAGING_BASIC_AUTH_PASSWORD` — gate `slj.round-table.co.uk`
 
 ## Directory map
 - `app/` Next.js routes
@@ -59,12 +61,14 @@ Server-only (only if needed later):
   - `worksheets/` print-only worksheet definitions (md or json)
   - `manifest.json` generated stable IDs
 - `lib/`
-  - `supabase/` client helpers
-  - `content/` loaders + manifest utilities
+ - `db/` Drizzle schema + client
+ - `actions/` server actions for notes/progress/groups
+ - `content/` loaders + manifest utilities
+- `drizzle/` generated migrations (when using migrate)
 - `scripts/` content build scripts
-- `supabase/` migrations + RLS policies
 - `docs/` planning + architecture + rules
-- `docs/agent-handoff-jul-2026.md` — current production state for agents (Jul 2026)
+- `docs/agent-handoff-jul-2026.md` — production state for agents (Jul 2026)
+- `docs/plans/Neon-Authjs-Drizzle-Migration-Plan.md` — DB/Auth migration plan
 - `.cursor/rules/` scoped rules for agents
 
 ## Definition of Done (any task)

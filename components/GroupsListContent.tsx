@@ -3,12 +3,11 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import {
-  createGroup,
-  joinGroupByCode,
-  type Group,
-} from "@/lib/groups";
+  actionCreateGroup,
+  actionJoinGroupByCode,
+} from "@/lib/actions/data";
+import type { Group } from "@/lib/groups";
 import { CardSection, PageShell } from "@/components/ui/surfaces";
 
 function formatStartDate(dateStr: string | null): string {
@@ -50,9 +49,7 @@ export function GroupsListContent({
       setCreateError(null);
       setCreateLoading(true);
       try {
-        const supabase = createClient();
-        const group = await createGroup(
-          supabase,
+        const group = await actionCreateGroup(
           createName,
           createStartDate || null
         );
@@ -76,8 +73,7 @@ export function GroupsListContent({
       setJoinError(null);
       setJoinLoading(true);
       try {
-        const supabase = createClient();
-        const groupId = await joinGroupByCode(supabase, joinCode);
+        const groupId = await actionJoinGroupByCode(joinCode);
         router.push(`/groups/${groupId}`);
       } catch (err) {
         const message =

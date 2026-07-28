@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Play, ArrowRight } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/auth";
 import {
   getChapterDisplayTitleMap,
   getChapters,
@@ -8,13 +8,13 @@ import {
   getResumeHref,
   getSections,
 } from "@/lib/content";
-import { getLastReadPosition } from "@/lib/progress-actions";
+import { getLastReadPosition } from "@/lib/actions/data";
+import { getChapterProgressForUser } from "@/lib/progress";
 import {
   getChapterCompletionStats,
   getInteractiveSessionNumberMap,
 } from "@/lib/progress-summary";
 import { formatSessionLabel } from "@/lib/session-labels";
-import { isMissingChapterProgressTable } from "@/lib/progress-errors";
 import { PageShell } from "@/components/ui/surfaces";
 import { COURSE_TITLE, PREFACE_HREF } from "@/lib/site-branding";
 import type { Chapter, Section } from "@/lib/content";
@@ -45,25 +45,21 @@ export interface ProgressDashboardProps {
 export async function ProgressDashboard({
   variant = "home",
 }: ProgressDashboardProps = {}) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
+  if (!user?.id) return null;
 
-  if (!user) return null;
-
-  const { data: chapterProgressRows, error: progressError } = await supabase
-    .from("chapter_progress")
-    .select("chapter_id, completed_at")
-    .eq("user_id", user.id);
-
-  const progressSetupMissing = isMissingChapterProgressTable(progressError);
-
+  let progressSetupMissing = false;
   const completedByChapter = new Map<string, boolean>();
-  for (const row of chapterProgressRows ?? []) {
-    if (row.completed_at != null) {
-      completedByChapter.set(row.chapter_id, true);
+  try {
+    const chapterProgressRows = await getChapterProgressForUser(user.id);
+    for (const row of chapterProgressRows) {
+      if (row.completed_at != null) {
+        completedByChapter.set(row.chapter_id, true);
+      }
     }
+  } catch {
+    progressSetupMissing = true;
   }
 
   const lastRead = await getLastReadPosition();
@@ -207,7 +203,7 @@ export async function ProgressDashboard({
         >
           Chapter completion is not available until the{" "}
           <code className="text-xs">chapter_progress</code> migration is applied
-          in Supabase. Run <code className="text-xs">pnpm db:push</code> (see
+          on the database. Run <code className="text-xs">pnpm db:migrate</code> (see
           README).
         </p>
       ) : null}

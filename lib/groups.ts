@@ -1,9 +1,15 @@
 /**
- * Client-side groups API: create, join by code, fetch, update shared notes.
- * RLS: only members can read/update groups; join via RPC.
+ * Groups — server-only. Membership checked in application code.
  */
 
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { and, asc, eq, inArray } from "drizzle-orm";
+import { getDb } from "@/lib/db";
+import { groupMembers, groups } from "@/lib/db/schema";
+import {
+  groupNameSchema,
+  inviteCodeSchema,
+  sharedNotesSchema,
+} from "@/lib/validation";
 
 export interface Group {
   id: string;
@@ -15,149 +21,147 @@ export interface Group {
   created_at: string;
 }
 
-export interface GroupMember {
-  id: string;
-  group_id: string;
-  user_id: string;
-  role: "member" | "owner";
-  joined_at: string;
-}
-
 const INVITE_CODE_LENGTH = 8;
 const INVITE_CODE_CHARS =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-const NAME_MAX_LENGTH = 200;
-const SHARED_NOTES_MAX_LENGTH = 50_000;
 
 function generateInviteCode(): string {
   const bytes = new Uint8Array(INVITE_CODE_LENGTH);
   crypto.getRandomValues(bytes);
-  return Array.from(bytes, (b) => INVITE_CODE_CHARS[b % INVITE_CODE_CHARS.length])
-    .join("");
+  return Array.from(
+    bytes,
+    (b) => INVITE_CODE_CHARS[b % INVITE_CODE_CHARS.length]
+  ).join("");
+}
+
+function mapGroup(row: typeof groups.$inferSelect): Group {
+  return {
+    id: row.id,
+    name: row.name,
+    invite_code: row.inviteCode,
+    start_date: row.startDate,
+    shared_notes: row.sharedNotes,
+    created_by: row.createdBy,
+    created_at: row.createdAt.toISOString(),
+  };
+}
+
+async function assertMember(userId: string, groupId: string): Promise<boolean> {
+  const db = getDb();
+  const row = await db.query.groupMembers.findFirst({
+    where: and(
+      eq(groupMembers.groupId, groupId),
+      eq(groupMembers.userId, userId)
+    ),
+  });
+  return !!row;
 }
 
 export async function createGroup(
-  supabase: SupabaseClient,
+  userId: string,
   name: string,
   start_date: string | null
 ): Promise<Group> {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError) throw authError;
-  if (!user) throw new Error("Must be signed in to create a group");
-
-  const trimmedName = name.trim().slice(0, NAME_MAX_LENGTH);
-  if (!trimmedName) throw new Error("Group name is required");
-
+  const trimmedName = groupNameSchema.parse(name);
   const dateValue =
     start_date && start_date.trim() ? start_date.trim() : null;
+  const db = getDb();
 
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const invite_code = generateInviteCode();
-    const { data: group, error: insertError } = await supabase
-      .from("groups")
-      .insert({
-        name: trimmedName,
-        invite_code,
-        start_date: dateValue,
-        shared_notes: "",
-        created_by: user.id,
-      })
-      .select("id, name, invite_code, start_date, shared_notes, created_by, created_at")
-      .single();
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const inviteCode = generateInviteCode();
+    try {
+      const [group] = await db
+        .insert(groups)
+        .values({
+          name: trimmedName,
+          inviteCode,
+          startDate: dateValue,
+          sharedNotes: "",
+          createdBy: userId,
+        })
+        .returning();
 
-    if (insertError) {
-      if (insertError.code === "23505" && attempt === 0) {
-        continue;
-      }
-      throw insertError;
+      await db.insert(groupMembers).values({
+        groupId: group.id,
+        userId,
+        role: "owner",
+      });
+
+      return mapGroup(group);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes("unique") && attempt < 2) continue;
+      throw err;
     }
-
-    const { error: memberError } = await supabase.from("group_members").insert({
-      group_id: (group as Group).id,
-      user_id: user.id,
-      role: "owner",
-    });
-    if (memberError) {
-      await supabase.from("groups").delete().eq("id", (group as Group).id);
-      throw memberError;
-    }
-
-    return group as Group;
   }
 
   throw new Error("Could not generate unique invite code");
 }
 
 export async function joinGroupByCode(
-  supabase: SupabaseClient,
+  userId: string,
   code: string
 ): Promise<string> {
-  const trimmed = code.trim();
-  if (!trimmed) throw new Error("Invite code is required");
-
-  const { data, error } = await supabase.rpc("join_group_by_invite_code", {
-    p_invite_code: trimmed,
+  const trimmed = inviteCodeSchema.parse(code);
+  const db = getDb();
+  const group = await db.query.groups.findFirst({
+    where: eq(groups.inviteCode, trimmed),
   });
-  if (error) throw error;
-  if (data == null) throw new Error("Invalid or expired invite code");
-  return data as string;
+  if (!group) throw new Error("Invalid or expired invite code");
+
+  await db
+    .insert(groupMembers)
+    .values({
+      groupId: group.id,
+      userId,
+      role: "member",
+    })
+    .onConflictDoNothing();
+
+  return group.id;
 }
 
-export async function fetchUserGroups(
-  supabase: SupabaseClient
-): Promise<Group[]> {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError) throw authError;
-  if (!user) return [];
+export async function fetchUserGroups(userId: string): Promise<Group[]> {
+  const db = getDb();
+  const memberships = await db
+    .select({ groupId: groupMembers.groupId })
+    .from(groupMembers)
+    .where(eq(groupMembers.userId, userId));
+  if (!memberships.length) return [];
 
-  const { data: memberships, error: memError } = await supabase
-    .from("group_members")
-    .select("group_id")
-    .eq("user_id", user.id);
-  if (memError) throw memError;
-  if (!memberships?.length) return [];
-
-  const groupIds = memberships.map((m) => m.group_id);
-  const { data: groups, error: groupsError } = await supabase
-    .from("groups")
-    .select("*")
-    .in("id", groupIds)
-    .order("name");
-  if (groupsError) throw groupsError;
-  return (groups ?? []) as Group[];
+  const groupIds = memberships.map((m) => m.groupId);
+  const rows = await db
+    .select()
+    .from(groups)
+    .where(inArray(groups.id, groupIds))
+    .orderBy(asc(groups.name));
+  return rows.map(mapGroup);
 }
 
 export async function fetchGroup(
-  supabase: SupabaseClient,
+  userId: string,
   groupId: string
 ): Promise<Group | null> {
-  const { data, error } = await supabase
-    .from("groups")
-    .select("*")
-    .eq("id", groupId)
-    .single();
-  if (error) {
-    if (error.code === "PGRST116") return null;
-    throw error;
-  }
-  return data as Group;
+  if (!(await assertMember(userId, groupId))) return null;
+  const db = getDb();
+  const row = await db.query.groups.findFirst({
+    where: eq(groups.id, groupId),
+  });
+  return row ? mapGroup(row) : null;
 }
 
 export async function updateGroupSharedNotes(
-  supabase: SupabaseClient,
+  userId: string,
   groupId: string,
   shared_notes: string
 ): Promise<void> {
-  const trimmed = shared_notes.slice(0, SHARED_NOTES_MAX_LENGTH);
-  const { error } = await supabase
-    .from("groups")
-    .update({ shared_notes: trimmed })
-    .eq("id", groupId);
-  if (error) throw error;
+  if (!(await assertMember(userId, groupId))) {
+    throw new Error("Not a group member");
+  }
+  const trimmed = sharedNotesSchema.parse(shared_notes);
+  const db = getDb();
+  await db
+    .update(groups)
+    .set({ sharedNotes: trimmed })
+    .where(eq(groups.id, groupId));
 }

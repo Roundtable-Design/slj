@@ -1,9 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { signOut } from "@/auth";
+import { redirect } from "next/navigation";
 
-export async function POST(request: Request) {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  const { origin } = new URL(request.url);
-  return NextResponse.redirect(`${origin}/`, 302);
+export async function POST() {
+  await signOut({ redirect: false });
+  redirect("/");
+}
+
+export async function GET() {
+  await signOut({ redirect: false });
+  redirect("/");
 }

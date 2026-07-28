@@ -10,12 +10,12 @@ A small course platform:
 
 ## Containers
 - Web app: Next.js on Vercel
-- DB/Auth: Supabase Postgres + Auth + RLS
+- DB/Auth: Neon Postgres + Auth.js (Resend magic link) + Drizzle; authz in server actions
 - Content: Markdown in repo + build script to generate stable IDs manifest
 
 ## Data flow
 - Content: server renders Markdown → blocks with stable IDs
-- Notes/progress: client reads/writes via Supabase (RLS enforces ownership)
+- Notes/progress: client calls server actions → Drizzle → Neon (session-scoped)
 - Groups: membership-gated shared data (start date + shared notes)
 
 ### Chapter mode (interactive vs static)
@@ -25,7 +25,7 @@ Each chapter in the manifest has a **mode**: `interactive` (default) or `static`
 - `content/` source of truth
 - `scripts/` generate `content/manifest.json`
 - `lib/content/` loaders + ID helpers
-- `lib/supabase/` client helpers
+- `lib/db/` Drizzle + `lib/actions/` server actions
 - `app/(course)` reader pages
 - `app/(groups)` group pages
 - `app/(worksheets)` worksheets + print routes

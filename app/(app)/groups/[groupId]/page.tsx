@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/auth";
 import { fetchGroup } from "@/lib/groups";
 import { CopyInviteLinkClient } from "@/components/CopyInviteLinkClient";
 import { GroupSharedNotesEditor } from "@/components/GroupSharedNotesEditor";
@@ -27,16 +27,14 @@ export default async function GroupDetailPage({
   params: Promise<{ groupId: string }>;
 }) {
   const { groupId } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  const user = session?.user;
 
-  if (!user) {
+  if (!user?.id) {
     redirect(buildSignInHref(`/groups/${groupId}`));
   }
 
-  const group = await fetchGroup(supabase, groupId);
+  const group = await fetchGroup(user.id, groupId);
   if (!group) {
     redirect("/groups");
   }

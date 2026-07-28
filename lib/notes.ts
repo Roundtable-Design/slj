@@ -1,9 +1,11 @@
 /**
- * Client-side notes API: fetch, insert, update, delete.
- * Uses browser Supabase client; RLS enforces user_id = auth.uid().
+ * Private margin notes — server-only. Never log note bodies.
  */
 
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { and, asc, eq, inArray } from "drizzle-orm";
+import { getDb } from "@/lib/db";
+import { notes } from "@/lib/db/schema";
+import { blockIdSchema, noteBodySchema } from "@/lib/validation";
 
 export interface Note {
   id: string;
@@ -14,75 +16,71 @@ export interface Note {
   updated_at: string;
 }
 
-const BODY_MAX_LENGTH = 10_000;
+function mapNote(row: typeof notes.$inferSelect): Note {
+  return {
+    id: row.id,
+    user_id: row.userId,
+    block_id: row.blockId,
+    body: row.body,
+    created_at: row.createdAt.toISOString(),
+    updated_at: row.updatedAt.toISOString(),
+  };
+}
 
 export async function fetchNotesForBlocks(
-  supabase: SupabaseClient,
+  userId: string,
   blockIds: string[]
 ): Promise<Note[]> {
   if (blockIds.length === 0) return [];
-  const { data, error } = await supabase
-    .from("notes")
-    .select("*")
-    .in("block_id", blockIds)
-    .order("created_at", { ascending: true });
-  if (error) throw error;
-  return (data ?? []) as Note[];
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(notes)
+    .where(and(eq(notes.userId, userId), inArray(notes.blockId, blockIds)))
+    .orderBy(asc(notes.createdAt));
+  return rows.map(mapNote);
 }
 
 export async function insertNote(
-  supabase: SupabaseClient,
+  userId: string,
   block_id: string,
   body: string
 ): Promise<Note> {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError) throw authError;
-  if (!user) throw new Error("Must be signed in to save notes");
-
-  const trimmed = body.slice(0, BODY_MAX_LENGTH);
-  const updated_at = new Date().toISOString();
-
-  const { data, error } = await supabase
-    .from("notes")
-    .insert({
-      user_id: user.id,
-      block_id,
+  const blockId = blockIdSchema.parse(block_id);
+  const trimmed = noteBodySchema.parse(body);
+  const db = getDb();
+  const now = new Date();
+  const [row] = await db
+    .insert(notes)
+    .values({
+      userId,
+      blockId,
       body: trimmed,
-      updated_at,
+      updatedAt: now,
     })
-    .select("id, user_id, block_id, body, created_at, updated_at")
-    .single();
-
-  if (error) throw error;
-  return data as Note;
+    .returning();
+  return mapNote(row);
 }
 
 export async function updateNote(
-  supabase: SupabaseClient,
+  userId: string,
   id: string,
   body: string
 ): Promise<Note> {
-  const trimmed = body.slice(0, BODY_MAX_LENGTH);
-  const updated_at = new Date().toISOString();
-
-  const { data, error } = await supabase
-    .from("notes")
-    .update({ body: trimmed, updated_at })
-    .eq("id", id)
-    .select("id, user_id, block_id, body, created_at, updated_at")
-    .single();
-
-  if (error) throw error;
-  return data as Note;
+  const trimmed = noteBodySchema.parse(body);
+  const db = getDb();
+  const [row] = await db
+    .update(notes)
+    .set({ body: trimmed, updatedAt: new Date() })
+    .where(and(eq(notes.id, id), eq(notes.userId, userId)))
+    .returning();
+  if (!row) throw new Error("Note not found");
+  return mapNote(row);
 }
 
-export async function deleteNote(
-  supabase: SupabaseClient,
-  id: string
-): Promise<void> {
-  const { error } = await supabase.from("notes").delete().eq("id", id);
-  if (error) throw error;
+export async function deleteNote(userId: string, id: string): Promise<void> {
+  const db = getDb();
+  await db
+    .delete(notes)
+    .where(and(eq(notes.id, id), eq(notes.userId, userId)));
 }
