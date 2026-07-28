@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getLastReadPosition } from "@/lib/progress-actions";
+import { getLastReadPosition } from "@/lib/actions/data";
 import { getChapters, getChapter, getFirstInteractiveChapter, getResumeHref } from "@/lib/content";
 
 export default async function CoursePage() {
