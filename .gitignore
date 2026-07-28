@@ -46,3 +46,4 @@ yarn-error.log*
 .env*.local
 
 .staging-secrets.local
+.artifacts/
