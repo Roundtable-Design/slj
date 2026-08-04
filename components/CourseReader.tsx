@@ -270,9 +270,6 @@ export function CourseReader({
     [chapterId]
   );
 
-  const notesLayoutOpen =
-    !!user && (notes.length > 0 || activeBlockId != null);
-
   const blockHandlers = useMemo(
     () => ({
       isInteractive,
@@ -283,7 +280,6 @@ export function CourseReader({
       blockIdToLabel,
       activeBlockId,
       isSignedIn: !!user,
-      reserveMargin: notesLayoutOpen,
       onAddOrEditNote: handleAddOrEditNote,
       onInsert: handleInsertNote,
       onUpdate: handleUpdateNote,
@@ -300,7 +296,6 @@ export function CourseReader({
       blockIdToLabel,
       activeBlockId,
       user,
-      notesLayoutOpen,
       handleAddOrEditNote,
       handleInsertNote,
       handleUpdateNote,
@@ -336,9 +331,7 @@ export function CourseReader({
     }
   }, [chapterId]);
 
-  const readerColumnClass = notesLayoutOpen
-    ? "slj-reader-blocks slj-reader-column--notes-open"
-    : "slj-reader-blocks slj-reader-column";
+  const readerColumnClass = "slj-reader-blocks slj-reader-column";
 
   return (
     <div className="min-w-0 w-full max-w-[min(100%,90rem)]">

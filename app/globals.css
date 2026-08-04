@@ -148,27 +148,11 @@
   /*
    * Reading measure: 65ch — mid-band of the usual 45–75cpl guidance,
    * and the same default as Tailwind Typography (`prose`). See DesignGuidelines.
+   * Margin notes hang absolutely to the right of this column (see MarginNoteRow)
+   * so the measure never shifts when notes appear.
    */
   .slj-reader-column {
     @apply relative mx-auto w-full max-w-[65ch] overflow-x-visible;
-  }
-
-  /**
-   * When margin notes are open: full shell width so each row can use a
-   * balanced 1fr | 65ch | 1fr track. The measure stays at the same center
-   * as the no-notes column; notes sit in the right fringe.
-   */
-  .slj-reader-column--notes-open {
-    @apply relative mx-auto w-full max-w-none overflow-x-visible;
-  }
-
-  .slj-reader-column--notes-open > :not([data-block-row]):not(ul) {
-    @apply mx-auto w-full max-w-[65ch];
-  }
-
-  .slj-reader-column--notes-open > ul {
-    width: 100%;
-    max-width: none;
   }
 
   /** Bible quotes: stronger rule + caption (see BlockContent parseBibleQuoteContent). */

@@ -5,22 +5,43 @@ test.describe("James feedback (layout + content)", () => {
     page,
   }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto("/course/09-session-one");
+    await page.goto("/course/11-session-two");
+    const column = page.locator("article .slj-reader-column").first();
+    await expect(column).toBeVisible();
+
+    const heading = page.locator("article h1, article h2").first();
     const row = page.locator("[data-block-row]").first();
     await expect(row).toBeVisible();
     const text = row.locator(":scope > div").first();
-    const textBox = await text.boundingBox();
-    expect(textBox?.width ?? 0).toBeGreaterThan(480);
-    const margin = row.locator(".margin-notes-column");
-    if ((await margin.count()) > 0) {
-      const box = await margin.first().boundingBox();
-      expect(box?.width ?? 0).toBeLessThan(1280 / 3);
-      const article = page.locator("article.slj-shell").first();
-      const articleBox = await article.boundingBox();
-      if (box && articleBox) {
-        const rightGap = articleBox.x + articleBox.width - (box.x + box.width);
-        expect(rightGap).toBeGreaterThanOrEqual(16);
-      }
+
+    const headingBox = await heading.boundingBox();
+    const textBoxBefore = await text.boundingBox();
+    expect(textBoxBefore?.width ?? 0).toBeGreaterThan(480);
+    // Heading and body share the same centered measure (not a split layout).
+    expect(Math.abs((headingBox?.x ?? 0) - (textBoxBefore?.x ?? 0))).toBeLessThan(24);
+
+    // Simulate an open margin note without needing auth/DB.
+    await row.evaluate((el) => {
+      const note = document.createElement("div");
+      note.className = "margin-notes-column";
+      note.style.cssText =
+        "position:absolute;left:100%;top:0;margin-left:1.25rem;width:14rem;padding:0.5rem;border:1px solid #ccc;background:#fff";
+      note.textContent = "Test note";
+      el.appendChild(note);
+    });
+
+    const textBoxAfter = await text.boundingBox();
+    expect(Math.abs((textBoxAfter?.x ?? 0) - (textBoxBefore?.x ?? 0))).toBeLessThan(2);
+    expect(Math.abs((textBoxAfter?.width ?? 0) - (textBoxBefore?.width ?? 0))).toBeLessThan(2);
+
+    const listRow = page.locator("ul.slj-bullets [data-block-row]").first();
+    if ((await listRow.count()) > 0) {
+      const listText = listRow.locator(":scope > div").first();
+      const listItem = listRow.locator("xpath=ancestor::li[1]");
+      const itemBox = await listItem.boundingBox();
+      const listTextBox = await listText.boundingBox();
+      // Bullets must stay beside their text (not stranded in a left 1fr gutter).
+      expect((listTextBox?.x ?? 0) - (itemBox?.x ?? 0)).toBeLessThan(48);
     }
   });
 
