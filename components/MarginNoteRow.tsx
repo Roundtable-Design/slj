@@ -16,6 +16,11 @@ export interface MarginNoteRowProps {
   hasNote: boolean;
   activeBlockId: string | null;
   isSignedIn: boolean;
+  /**
+   * Chapter has at least one note (or open composer). Keeps a stable two-column
+   * track on desktop so text edges stay aligned across rows.
+   */
+  reserveMargin?: boolean;
   onAddOrEditNote: (block_id: string) => void;
   onInsert: (block_id: string, body: string) => Promise<void>;
   onUpdate: (id: string, body: string) => Promise<void>;
@@ -34,6 +39,7 @@ export function MarginNoteRow({
   hasNote,
   activeBlockId,
   isSignedIn,
+  reserveMargin = false,
   onAddOrEditNote,
   onInsert,
   onUpdate,
@@ -47,12 +53,17 @@ export function MarginNoteRow({
     (attributionBlock != null && activeBlockId === attributionBlock.block_id);
   const showComposer = isSignedIn && isActive;
   const showMarginColumn = isSignedIn && (notes.length > 0 || showComposer);
+  const useTwoCol = reserveMargin || showMarginColumn;
 
   return (
     <div
       data-block-row={block.block_id}
-      className={`relative w-full ${
-        dense ? "gap-y-1 py-0" : "gap-y-3 py-1"
+      className={`${
+        dense ? "py-0" : "py-1"
+      } ${
+        useTwoCol
+          ? "grid grid-cols-1 items-start gap-x-0 gap-y-3 md:grid-cols-[minmax(0,72ch)_minmax(10.5rem,13rem)] md:gap-x-6 lg:grid-cols-[minmax(0,72ch)_minmax(11rem,14rem)] lg:gap-x-8"
+          : "w-full"
       } ${isActive ? "rounded bg-[var(--slj-active)]" : ""}`}
     >
       <div className="min-w-0 w-full">
@@ -70,7 +81,7 @@ export function MarginNoteRow({
       </div>
       {showMarginColumn ? (
         <div
-          className="margin-notes-column mt-3 min-w-0 md:absolute md:left-[calc(100%+1rem)] md:top-0 md:mt-0 md:w-[min(15rem,22vw)] md:max-h-[50vh] md:overflow-y-auto"
+          className="margin-notes-column min-w-0 md:max-h-[50vh] md:overflow-y-auto md:pr-1"
           aria-label="Notes for this paragraph"
         >
           {notes.map((note) => (
@@ -92,6 +103,8 @@ export function MarginNoteRow({
             />
           ) : null}
         </div>
+      ) : useTwoCol ? (
+        <div className="hidden md:block" aria-hidden />
       ) : null}
     </div>
   );

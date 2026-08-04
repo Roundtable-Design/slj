@@ -181,6 +181,13 @@ export function FullBookReader({
         headingTextMatchesDisplayTitle(firstBlock.content, displayTitle);
 
       const isInteractive = chapter.mode !== "static";
+      const chapterHasNotes = chapter.sections.some((section) =>
+        section.blocks.some(
+          (b) =>
+            blockIdsWithNotes.has(b.block_id) || activeBlockId === b.block_id
+        )
+      );
+      const reserveMargin = !!user && chapterHasNotes;
       const blockHandlers = {
         isInteractive,
         blockIdsWithNotes,
@@ -188,6 +195,7 @@ export function FullBookReader({
         blockIdToLabel,
         activeBlockId,
         isSignedIn: !!user,
+        reserveMargin,
         onAddOrEditNote: handleAddOrEditNote,
         onInsert: handleInsertNote,
         onUpdate: handleUpdateNote,
@@ -214,7 +222,9 @@ export function FullBookReader({
             <div
               className={
                 chapter.mode === "interactive"
-                  ? "slj-reader-blocks slj-reader-column"
+                  ? reserveMargin
+                    ? "slj-reader-blocks slj-reader-column--notes-open"
+                    : "slj-reader-blocks slj-reader-column"
                   : "slj-reader-blocks mx-auto max-w-[72ch]"
               }
             >

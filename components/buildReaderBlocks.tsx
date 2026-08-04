@@ -26,6 +26,8 @@ export interface ReaderBlockHandlers {
   blockIdToLabel: Record<string, string>;
   activeBlockId: string | null;
   isSignedIn: boolean;
+  /** Chapter currently showing margin notes — keep desktop tracks aligned. */
+  reserveMargin?: boolean;
   onAddOrEditNote: (block_id: string) => void;
   onInsert: (block_id: string, body: string) => Promise<void>;
   onUpdate: (id: string, body: string) => Promise<void>;
@@ -90,6 +92,7 @@ export function buildReaderBlockNodes(
             hasNote={hasNote}
             activeBlockId={handlers.activeBlockId}
             isSignedIn={handlers.isSignedIn}
+            reserveMargin={handlers.reserveMargin}
             onAddOrEditNote={handlers.onAddOrEditNote}
             onInsert={handlers.onInsert}
             onUpdate={handlers.onUpdate}
@@ -133,6 +136,7 @@ export function buildReaderBlockNodes(
                       hasNote={handlers.blockIdsWithNotes.has(item.block_id)}
                       activeBlockId={handlers.activeBlockId}
                       isSignedIn={handlers.isSignedIn}
+                      reserveMargin={handlers.reserveMargin}
                       onAddOrEditNote={handlers.onAddOrEditNote}
                       onInsert={handlers.onInsert}
                       onUpdate={handlers.onUpdate}
@@ -170,6 +174,7 @@ export function buildReaderBlockNodes(
               hasNote={handlers.blockIdsWithNotes.has(block.block_id)}
               activeBlockId={handlers.activeBlockId}
               isSignedIn={handlers.isSignedIn}
+              reserveMargin={handlers.reserveMargin}
               onAddOrEditNote={handlers.onAddOrEditNote}
               onInsert={handlers.onInsert}
               onUpdate={handlers.onUpdate}
@@ -224,6 +229,7 @@ export function buildReaderBlockNodes(
             hasNote={handlers.blockIdsWithNotes.has(block.block_id)}
             activeBlockId={handlers.activeBlockId}
             isSignedIn={handlers.isSignedIn}
+            reserveMargin={handlers.reserveMargin}
             onAddOrEditNote={handlers.onAddOrEditNote}
             onInsert={handlers.onInsert}
             onUpdate={handlers.onUpdate}

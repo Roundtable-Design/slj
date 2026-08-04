@@ -4,6 +4,7 @@ test.describe("James feedback (layout + content)", () => {
   test("margin notes sit beside the reading column without shrinking it", async ({
     page,
   }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/course/09-session-one");
     const row = page.locator("[data-block-row]").first();
     await expect(row).toBeVisible();
@@ -14,6 +15,12 @@ test.describe("James feedback (layout + content)", () => {
     if ((await margin.count()) > 0) {
       const box = await margin.first().boundingBox();
       expect(box?.width ?? 0).toBeLessThan(1280 / 3);
+      const article = page.locator("article.slj-shell").first();
+      const articleBox = await article.boundingBox();
+      if (box && articleBox) {
+        const rightGap = articleBox.x + articleBox.width - (box.x + box.width);
+        expect(rightGap).toBeGreaterThanOrEqual(16);
+      }
     }
   });
 

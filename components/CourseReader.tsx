@@ -270,6 +270,9 @@ export function CourseReader({
     [chapterId]
   );
 
+  const notesLayoutOpen =
+    !!user && (notes.length > 0 || activeBlockId != null);
+
   const blockHandlers = useMemo(
     () => ({
       isInteractive,
@@ -280,6 +283,7 @@ export function CourseReader({
       blockIdToLabel,
       activeBlockId,
       isSignedIn: !!user,
+      reserveMargin: notesLayoutOpen,
       onAddOrEditNote: handleAddOrEditNote,
       onInsert: handleInsertNote,
       onUpdate: handleUpdateNote,
@@ -296,6 +300,7 @@ export function CourseReader({
       blockIdToLabel,
       activeBlockId,
       user,
+      notesLayoutOpen,
       handleAddOrEditNote,
       handleInsertNote,
       handleUpdateNote,
@@ -331,7 +336,9 @@ export function CourseReader({
     }
   }, [chapterId]);
 
-  const readerColumnClass = "slj-reader-blocks slj-reader-column";
+  const readerColumnClass = notesLayoutOpen
+    ? "slj-reader-blocks slj-reader-column--notes-open"
+    : "slj-reader-blocks slj-reader-column";
 
   return (
     <div className="min-w-0 w-full max-w-[min(100%,90rem)]">
@@ -406,11 +413,15 @@ export function CourseReader({
         </nav>
       )}
 
-      <article className="slj-shell overflow-x-visible p-6 font-serif md:p-10">
+      <article className="slj-shell overflow-x-visible p-6 font-serif md:p-8 lg:p-10">
         <ChapterPager
           prevChapter={prevChapter}
           nextChapter={nextChapter}
-          className="mb-8 border-b border-[var(--slj-border)] pb-6 slj-reader-column"
+          className={`mb-8 border-b border-[var(--slj-border)] pb-6 ${
+            notesLayoutOpen
+              ? "slj-reader-column--notes-open"
+              : "slj-reader-column"
+          }`}
         />
         <div className={readerColumnClass}>
           {!isInteractive && !skipShellHeader ? (
@@ -437,7 +448,11 @@ export function CourseReader({
       <ChapterPager
         prevChapter={prevChapter}
         nextChapter={nextChapter}
-        className="mt-8 flex justify-between border-t border-[var(--slj-border)] pt-6 slj-reader-column"
+        className={`mt-8 flex justify-between border-t border-[var(--slj-border)] pt-6 ${
+          notesLayoutOpen
+            ? "slj-reader-column--notes-open"
+            : "slj-reader-column"
+        }`}
       />
     </div>
   );
