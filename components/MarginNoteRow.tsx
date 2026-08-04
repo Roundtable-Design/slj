@@ -17,8 +17,9 @@ export interface MarginNoteRowProps {
   activeBlockId: string | null;
   isSignedIn: boolean;
   /**
-   * Chapter has at least one note (or open composer). Keeps a stable two-column
-   * track on desktop so text edges stay aligned across rows.
+   * Chapter has at least one note (or open composer). Use the balanced
+   * 1fr | 65ch | 1fr track so the measure stays centered while notes sit
+   * in the right fringe.
    */
   reserveMargin?: boolean;
   onAddOrEditNote: (block_id: string) => void;
@@ -53,7 +54,8 @@ export function MarginNoteRow({
     (attributionBlock != null && activeBlockId === attributionBlock.block_id);
   const showComposer = isSignedIn && isActive;
   const showMarginColumn = isSignedIn && (notes.length > 0 || showComposer);
-  const useTwoCol = reserveMargin || showMarginColumn;
+  /** Balanced three-column track — text stays at the same center as no-notes. */
+  const useBalancedTrack = reserveMargin || showMarginColumn;
 
   return (
     <div
@@ -61,11 +63,14 @@ export function MarginNoteRow({
       className={`${
         dense ? "py-0" : "py-1"
       } ${
-        useTwoCol
-          ? "grid grid-cols-1 items-start gap-x-0 gap-y-3 md:grid-cols-[minmax(0,65ch)_minmax(10.5rem,13rem)] md:gap-x-10 lg:grid-cols-[minmax(0,65ch)_minmax(11rem,14rem)] lg:gap-x-12"
+        useBalancedTrack
+          ? "grid w-full grid-cols-1 items-start gap-x-0 gap-y-3 md:grid-cols-[minmax(0,1fr)_minmax(0,65ch)_minmax(0,1fr)] md:gap-x-4 lg:gap-x-6"
           : "w-full"
       } ${isActive ? "rounded bg-[var(--slj-active)]" : ""}`}
     >
+      {useBalancedTrack ? (
+        <div className="hidden md:block" aria-hidden />
+      ) : null}
       <div className="min-w-0 w-full">
         <BlockAnchorProvider blockId={block.block_id}>
           <BlockWithNoteAction
@@ -81,7 +86,7 @@ export function MarginNoteRow({
       </div>
       {showMarginColumn ? (
         <div
-          className="margin-notes-column min-w-0 md:max-h-[50vh] md:overflow-y-auto md:pr-1"
+          className="margin-notes-column min-w-0 md:max-h-[50vh] md:max-w-[14rem] md:overflow-y-auto md:justify-self-start md:pr-1"
           aria-label="Notes for this paragraph"
         >
           {notes.map((note) => (
@@ -103,7 +108,7 @@ export function MarginNoteRow({
             />
           ) : null}
         </div>
-      ) : useTwoCol ? (
+      ) : useBalancedTrack ? (
         <div className="hidden md:block" aria-hidden />
       ) : null}
     </div>

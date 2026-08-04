@@ -154,26 +154,21 @@
   }
 
   /**
-   * When the chapter has margin notes: wider centered shell so the 65ch
-   * measure + note track + gaps fit without crowding the article edge.
+   * When margin notes are open: full shell width so each row can use a
+   * balanced 1fr | 65ch | 1fr track. The measure stays at the same center
+   * as the no-notes column; notes sit in the right fringe.
    */
   .slj-reader-column--notes-open {
-    @apply relative mx-auto w-full max-w-[min(100%,calc(65ch+2.5rem+14rem))];
+    @apply relative mx-auto w-full max-w-none overflow-x-visible;
   }
 
   .slj-reader-column--notes-open > :not([data-block-row]):not(ul) {
-    max-width: 65ch;
-    width: 100%;
+    @apply mx-auto w-full max-w-[65ch];
   }
 
   .slj-reader-column--notes-open > ul {
     width: 100%;
-  }
-
-  @media (min-width: 1024px) {
-    .slj-reader-column--notes-open {
-      max-width: min(100%, calc(65ch + 3rem + 14rem));
-    }
+    max-width: none;
   }
 
   /** Bible quotes: stronger rule + caption (see BlockContent parseBibleQuoteContent). */

@@ -417,11 +417,7 @@ export function CourseReader({
         <ChapterPager
           prevChapter={prevChapter}
           nextChapter={nextChapter}
-          className={`mb-8 border-b border-[var(--slj-border)] pb-6 ${
-            notesLayoutOpen
-              ? "slj-reader-column--notes-open"
-              : "slj-reader-column"
-          }`}
+          className="mb-8 border-b border-[var(--slj-border)] pb-6 slj-reader-column"
         />
         <div className={readerColumnClass}>
           {!isInteractive && !skipShellHeader ? (
@@ -448,11 +444,7 @@ export function CourseReader({
       <ChapterPager
         prevChapter={prevChapter}
         nextChapter={nextChapter}
-        className={`mt-8 flex justify-between border-t border-[var(--slj-border)] pt-6 ${
-          notesLayoutOpen
-            ? "slj-reader-column--notes-open"
-            : "slj-reader-column"
-        }`}
+        className="mt-8 flex justify-between border-t border-[var(--slj-border)] pt-6 slj-reader-column"
       />
     </div>
   );
