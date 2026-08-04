@@ -456,7 +456,7 @@ export function BlockWithNoteAction({
       <button
         type="button"
         onClick={() => onAddOrEditNote(block.block_id)}
-        className={`absolute z-10 flex items-center justify-center rounded border border-transparent bg-[var(--slj-surface)] text-[var(--slj-text-muted)] transition-colors hover:border-[var(--slj-border)] hover:text-[var(--slj-text)] focus-visible:border-[var(--slj-border)] focus-visible:text-[var(--slj-text)] md:left-full md:right-auto md:ml-2 md:opacity-0 md:group-hover/block:opacity-100 md:group-focus-within/block:opacity-100 ${
+        className={`absolute z-10 flex items-center justify-center rounded border border-transparent bg-[var(--slj-surface)] text-[var(--slj-text-muted)] transition-colors hover:border-[var(--slj-border)] hover:text-[var(--slj-text)] focus-visible:border-[var(--slj-border)] focus-visible:text-[var(--slj-text)] 2xl:left-full 2xl:right-auto 2xl:ml-2 2xl:opacity-0 2xl:group-hover/block:opacity-100 2xl:group-focus-within/block:opacity-100 ${
           dense
             ? "right-0 top-0.5 h-8 w-8"
             : "right-0 top-1/2 h-9 w-9 -translate-y-1/2"

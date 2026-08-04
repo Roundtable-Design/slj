@@ -20,19 +20,19 @@ test.describe("James feedback (layout + content)", () => {
     // Heading and body share the same centered measure (not a split layout).
     expect(Math.abs((headingBox?.x ?? 0) - (textBoxBefore?.x ?? 0))).toBeLessThan(24);
 
-    // Simulate an open margin note without needing auth/DB.
-    await row.evaluate((el) => {
+    // Below 2xl, notes stack under the paragraph (not absolute in the gutter).
+    const stackedNoteClass = await row.evaluate((el) => {
       const note = document.createElement("div");
-      note.className = "margin-notes-column";
-      note.style.cssText =
-        "position:absolute;left:100%;top:0;margin-left:1.25rem;width:14rem;padding:0.5rem;border:1px solid #ccc;background:#fff";
+      note.className =
+        "margin-notes-column mt-3 min-w-0 2xl:absolute 2xl:left-full 2xl:top-0 2xl:mt-0 2xl:ml-6 2xl:w-[14rem]";
       note.textContent = "Test note";
       el.appendChild(note);
+      return getComputedStyle(note).position;
     });
+    expect(stackedNoteClass).toBe("static");
 
-    const textBoxAfter = await text.boundingBox();
-    expect(Math.abs((textBoxAfter?.x ?? 0) - (textBoxBefore?.x ?? 0))).toBeLessThan(2);
-    expect(Math.abs((textBoxAfter?.width ?? 0) - (textBoxBefore?.width ?? 0))).toBeLessThan(2);
+    const textBoxAfterStack = await text.boundingBox();
+    expect(Math.abs((textBoxAfterStack?.x ?? 0) - (textBoxBefore?.x ?? 0))).toBeLessThan(2);
 
     const listRow = page.locator("ul.slj-bullets [data-block-row]").first();
     if ((await listRow.count()) > 0) {
@@ -40,9 +40,18 @@ test.describe("James feedback (layout + content)", () => {
       const listItem = listRow.locator("xpath=ancestor::li[1]");
       const itemBox = await listItem.boundingBox();
       const listTextBox = await listText.boundingBox();
-      // Bullets must stay beside their text (not stranded in a left 1fr gutter).
       expect((listTextBox?.x ?? 0) - (itemBox?.x ?? 0)).toBeLessThan(48);
     }
+
+    // Wide enough for side margin notes.
+    await page.setViewportSize({ width: 1600, height: 900 });
+    const sideNotePosition = await row.evaluate((el) => {
+      const note = el.querySelector(".margin-notes-column");
+      return note ? getComputedStyle(note).position : null;
+    });
+    expect(sideNotePosition).toBe("absolute");
+    const wideText = await text.boundingBox();
+    expect(wideText?.width ?? 0).toBeGreaterThan(480);
   });
 
   test("introduction shows a single top-level title", async ({ page }) => {

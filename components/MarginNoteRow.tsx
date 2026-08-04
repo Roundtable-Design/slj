@@ -74,7 +74,7 @@ export function MarginNoteRow({
       </div>
       {showMarginColumn ? (
         <div
-          className="margin-notes-column mt-3 min-w-0 md:absolute md:left-full md:top-0 md:mt-0 md:ml-5 md:w-[12.5rem] md:max-h-[50vh] md:overflow-y-auto lg:ml-6 lg:w-[14rem]"
+          className="margin-notes-column mt-3 min-w-0 2xl:absolute 2xl:left-full 2xl:top-0 2xl:mt-0 2xl:ml-6 2xl:w-[14rem] 2xl:max-h-[50vh] 2xl:overflow-y-auto"
           aria-label="Notes for this paragraph"
         >
           {notes.map((note) => (
