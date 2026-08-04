@@ -21,7 +21,7 @@ const signUpSchema = z.object({
 
 export type PrepareSignUpResult =
   | { ok: true; email: string }
-  | { ok: false; error: string };
+  | { ok: false; error: string; code?: "account_exists" };
 
 function displayName(
   firstName: string | undefined,
@@ -32,7 +32,11 @@ function displayName(
   return parts.join(" ");
 }
 
-/** Upsert Auth.js user row with optional name before sending magic link. */
+/**
+ * Create Auth.js user with optional name before sending magic link.
+ * Rejects emails that already belong to a verified (signed-in) account.
+ * Allows re-send for unfinished sign-ups (row exists, email not verified yet).
+ */
 export async function prepareSignUp(input: {
   email: string;
   firstName?: string;
@@ -53,15 +57,24 @@ export async function prepareSignUp(input: {
     });
 
     if (existing) {
+      if (existing.emailVerified) {
+        return {
+          ok: false,
+          code: "account_exists",
+          error:
+            "An account with this email already exists. Sign in instead.",
+        };
+      }
       if (name) {
         await db.update(users).set({ name }).where(eq(users.id, existing.id));
       }
-    } else {
-      await db.insert(users).values({
-        email,
-        ...(name ? { name } : {}),
-      });
+      return { ok: true, email };
     }
+
+    await db.insert(users).values({
+      email,
+      ...(name ? { name } : {}),
+    });
 
     return { ok: true, email };
   } catch {
