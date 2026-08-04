@@ -5,6 +5,11 @@ import Credentials from "next-auth/providers/credentials";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { eq } from "drizzle-orm";
 import { authConfig } from "@/auth.config";
+import {
+  magicLinkEmailHtml,
+  magicLinkEmailSubject,
+  magicLinkEmailText,
+} from "@/lib/auth-email";
 import { getDb } from "@/lib/db";
 import {
   accounts,
@@ -22,6 +27,29 @@ function buildProviders(): Provider[] {
     Resend({
       apiKey: process.env.AUTH_RESEND_KEY ?? process.env.RESEND_API_KEY,
       from: emailFrom,
+      async sendVerificationRequest({ identifier: to, url, provider }) {
+        const apiKey = provider.apiKey;
+        if (!apiKey) {
+          throw new Error("Resend API key is not configured");
+        }
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: provider.from,
+            to,
+            subject: magicLinkEmailSubject(),
+            html: magicLinkEmailHtml({ url }),
+            text: magicLinkEmailText({ url }),
+          }),
+        });
+        if (!res.ok) {
+          throw new Error("Resend error: " + JSON.stringify(await res.json()));
+        }
+      },
     }),
   ];
 
