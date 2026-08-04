@@ -31,7 +31,25 @@ test.describe("Auth smoke", () => {
     ).toHaveAttribute("href", /mailto:info@talksfromthewarehouse\.co\.uk/);
   });
 
-  test("course sidebar links back to Talks from the Warehouse", async ({ page }) => {
+  test("sign-up page loads name and email fields", async ({ page }) => {
+    await page.goto("/auth/sign-up");
+    await expect(page.getByLabel(/First name/i)).toBeVisible();
+    await expect(page.getByLabel(/Last name/i)).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Create account" })
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
+  });
+
+  test("sign-in page links to create account", async ({ page }) => {
+    await page.goto("/auth/sign-in");
+    await expect(
+      page.getByRole("link", { name: "Create an account" })
+    ).toHaveAttribute("href", /\/auth\/sign-up/);
+  });
+
+  test("course sidebar links to Talks from the Warehouse", async ({ page }) => {
     await page.goto("/course/09-session-one");
     const link = page
       .getByRole("complementary")

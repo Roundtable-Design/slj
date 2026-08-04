@@ -3,48 +3,51 @@
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { prepareSignUp } from "@/lib/actions/signup";
 import { sanitizeReturnTo } from "@/lib/navigation";
 
-interface SignInFormProps {
+interface SignUpFormProps {
   returnTo: string;
-  initialError?: string | null;
-  initialSent?: boolean;
-  allowDevLogin?: boolean;
 }
 
-export function SignInForm({
-  returnTo,
-  initialError = null,
-  initialSent = false,
-  allowDevLogin = false,
-}: SignInFormProps) {
+export function SignUpForm({ returnTo }: SignUpFormProps) {
   const safeReturnTo = sanitizeReturnTo(returnTo);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(initialSent);
+  const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState<string | null>(initialError);
-  const [devSecret, setDevSecret] = useState("");
-  const [devSigningIn, setDevSigningIn] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function sendLink() {
+  async function submitSignUp() {
     setError(null);
     setSending(true);
     try {
+      const prepared = await prepareSignUp({
+        email,
+        firstName,
+        lastName,
+      });
+      if (!prepared.ok) {
+        setError(prepared.error);
+        return;
+      }
+
       const result = await signIn("resend", {
-        email: email.trim(),
+        email: prepared.email,
         redirect: false,
         callbackUrl: safeReturnTo,
       });
       if (result?.error) {
         setError(
-          "We could not send the sign-in email right now. Please check your email address and try again."
+          "We could not send the sign-up email right now. Please check your email address and try again."
         );
         return;
       }
       setSent(true);
     } catch {
       setError(
-        "We could not send the sign-in email right now. Please check your email address and try again."
+        "We could not send the sign-up email right now. Please check your email address and try again."
       );
     } finally {
       setSending(false);
@@ -53,37 +56,53 @@ export function SignInForm({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await sendLink();
+    await submitSignUp();
   }
 
-  async function handleDevLogin(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    setDevSigningIn(true);
-    try {
-      const result = await signIn("e2e", {
-        email: email.trim(),
-        secret: devSecret,
-        redirect: false,
-        callbackUrl: safeReturnTo,
-      });
-      if (result?.error) {
-        setError("Dev sign-in failed. Check email and secret.");
-        return;
-      }
-      window.location.href = safeReturnTo;
-    } catch {
-      setError("Dev sign-in failed.");
-    } finally {
-      setDevSigningIn(false);
-    }
-  }
-
-  const signUpHref = `/auth/sign-up?returnTo=${encodeURIComponent(safeReturnTo)}`;
+  const signInHref = `/auth/sign-in?returnTo=${encodeURIComponent(safeReturnTo)}`;
 
   return (
     <div className="space-y-8">
       <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div>
+            <label
+              htmlFor="firstName"
+              className="slj-muted mb-1.5 block font-sans text-sm"
+            >
+              First name{" "}
+              <span className="slj-faint font-normal">(optional)</span>
+            </label>
+            <input
+              id="firstName"
+              type="text"
+              autoComplete="given-name"
+              value={firstName}
+              onChange={(event) => setFirstName(event.target.value)}
+              disabled={sending || sent}
+              className="slj-input w-full px-3 py-2.5 text-sm"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="lastName"
+              className="slj-muted mb-1.5 block font-sans text-sm"
+            >
+              Last name{" "}
+              <span className="slj-faint font-normal">(optional)</span>
+            </label>
+            <input
+              id="lastName"
+              type="text"
+              autoComplete="family-name"
+              value={lastName}
+              onChange={(event) => setLastName(event.target.value)}
+              disabled={sending || sent}
+              className="slj-input w-full px-3 py-2.5 text-sm"
+            />
+          </div>
+        </div>
+
         <div>
           <label
             htmlFor="email"
@@ -94,6 +113,7 @@ export function SignInForm({
           <input
             id="email"
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder="you@example.com"
@@ -116,8 +136,8 @@ export function SignInForm({
             </p>
             <p className="slj-muted font-sans text-sm leading-6">
               We emailed{" "}
-              <span className="font-medium text-[var(--slj-text)]">{email}</span>.
-              Open the message and click the sign-in link.
+              <span className="font-medium text-[var(--slj-text)]">{email}</span>{" "}
+              a link to finish creating your account.
             </p>
             <button
               type="button"
@@ -131,7 +151,7 @@ export function SignInForm({
             </button>
             <button
               type="button"
-              onClick={sendLink}
+              onClick={submitSignUp}
               disabled={sending}
               className="ml-4 slj-muted font-sans text-sm underline underline-offset-4 hover:text-[var(--slj-text)] disabled:opacity-50"
             >
@@ -144,46 +164,20 @@ export function SignInForm({
             className="slj-button w-full px-3 py-2.5 text-sm"
             disabled={sending}
           >
-            {sending ? "Sending..." : "Send sign-in email"}
+            {sending ? "Sending..." : "Create account"}
           </button>
         )}
       </form>
 
       <p className="slj-muted font-sans text-sm">
-        New here?{" "}
+        Already have an account?{" "}
         <Link
-          href={signUpHref}
+          href={signInHref}
           className="text-[var(--slj-text)] underline underline-offset-2 hover:opacity-80"
         >
-          Create an account
+          Sign in
         </Link>
       </p>
-
-      {allowDevLogin ? (
-        <form
-          onSubmit={handleDevLogin}
-          className="space-y-3 border-t border-[var(--slj-border)] pt-5"
-        >
-          <p className="slj-faint font-sans text-xs uppercase tracking-[0.18em]">
-            Local / staging test sign-in
-          </p>
-          <input
-            type="password"
-            value={devSecret}
-            onChange={(e) => setDevSecret(e.target.value)}
-            placeholder="E2E secret"
-            className="slj-input w-full px-3 py-2.5 text-sm"
-            aria-label="E2E secret"
-          />
-          <button
-            type="submit"
-            className="slj-button w-full px-3 py-2.5 text-sm"
-            disabled={devSigningIn || !email.trim()}
-          >
-            {devSigningIn ? "Signing in..." : "Sign in with test secret"}
-          </button>
-        </form>
-      ) : null}
     </div>
   );
 }

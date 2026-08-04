@@ -54,9 +54,15 @@ export default async function LandingPage() {
             </a>{" "}
             to request a copy.
           </p>
-          <div className="mt-8">
+          <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link href="/auth/sign-in" className="slj-button inline-flex px-5 py-3 text-sm">
               Sign in
+            </Link>
+            <Link
+              href="/auth/sign-up"
+              className="font-sans text-sm text-[var(--slj-text)] underline underline-offset-2 hover:opacity-80"
+            >
+              Create account
             </Link>
           </div>
         </section>
