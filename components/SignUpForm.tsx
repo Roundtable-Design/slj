@@ -18,9 +18,11 @@ export function SignUpForm({ returnTo }: SignUpFormProps) {
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [accountExists, setAccountExists] = useState(false);
 
   async function submitSignUp() {
     setError(null);
+    setAccountExists(false);
     setSending(true);
     try {
       const prepared = await prepareSignUp({
@@ -30,6 +32,7 @@ export function SignUpForm({ returnTo }: SignUpFormProps) {
       });
       if (!prepared.ok) {
         setError(prepared.error);
+        setAccountExists(prepared.code === "account_exists");
         return;
       }
 
@@ -126,6 +129,16 @@ export function SignUpForm({ returnTo }: SignUpFormProps) {
         {error && !sent ? (
           <div className="space-y-2" role="alert">
             <p className="font-sans text-sm text-[var(--slj-text)]">{error}</p>
+            {accountExists ? (
+              <p className="font-sans text-sm">
+                <Link
+                  href={signInHref}
+                  className="text-[var(--slj-text)] underline underline-offset-2 hover:opacity-80"
+                >
+                  Go to sign in
+                </Link>
+              </p>
+            ) : null}
           </div>
         ) : null}
 
