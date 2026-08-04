@@ -4,7 +4,11 @@ import { SignInForm } from "@/components/SignInForm";
 import { SiteFooter } from "@/components/SiteFooter";
 import { TalksFromTheWarehouseLink } from "@/components/TalksFromTheWarehouseLink";
 import { sanitizeReturnTo } from "@/lib/navigation";
-import { COURSE_TITLE } from "@/lib/site-branding";
+import {
+  COURSE_INFO_EMAIL,
+  COURSE_TITLE,
+  PRINT_VERSION_MAILTO,
+} from "@/lib/site-branding";
 
 export default async function SignInPage({
   searchParams,
@@ -44,6 +48,16 @@ export default async function SignInPage({
           <h1 className="mt-4 font-serif text-4xl font-semibold leading-none">
             {COURSE_TITLE}
           </h1>
+          <p className="slj-muted mt-4 font-sans text-sm leading-6">
+            A print version of this course is also available.{" "}
+            <a
+              href={PRINT_VERSION_MAILTO}
+              className="text-[var(--slj-text)] underline underline-offset-2 hover:opacity-80"
+            >
+              Email {COURSE_INFO_EMAIL}
+            </a>{" "}
+            to request a copy.
+          </p>
           <p className="slj-muted mt-4 font-sans text-sm leading-6">
             Enter your email. We&apos;ll send a sign-in link you can use to open
             the course.

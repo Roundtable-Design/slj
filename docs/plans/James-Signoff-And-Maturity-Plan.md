@@ -169,19 +169,22 @@ From `docs/Testing.md` “later hardening”:
 
 ---
 
-## Part 3 — Launch & distribution (back burner)
+## Part 3 — Launch & distribution
 
-Discussed on the 15 Jul call; **not blocking** content sign-off or maturity work.
+**Access model decided (Aug 2026):** open straight link from Talks from the Warehouse (no barrier).
 
-Track in `docs/Tasks.md` under a new section **“T9 — Public launch (deferred)”**:
+Canonical checklist + Inka draft: **[T9-Public-Launch.md](T9-Public-Launch.md)**. Track in `docs/Tasks.md` under **T9**.
 
-- [ ] **Talks from the Warehouse:** remove “coming shortly” / taster; add banner (“Now available”) linking to SLJ login
-- [ ] **Email:** James to provide copy; send via MailChimp to original list + new subscribers
-- [ ] **Access model:** open link vs invite-only vs Faith-in-the-Soil-style barrier — James to decide offline
+- [ ] **TFW toast:** “Simplicity, Love and Justice, a 10-week study course, is now digital.” → SLJ (keep ~6 months)
+- [ ] **TFW header menu:** Simplicity Love & Justice → SLJ (permanent)
+- [ ] **TFW:** remove “coming shortly” / taster
+- [x] **SLJ:** print version note + mailto `info@talksfromthewarehouse.co.uk` on login/landing
+- [ ] **`info@` routing:** confirm mailbox owners; use as replyable From for course email where possible
+- [ ] **Email:** MailChimp to subscriber list (James copy) after TFW banner live
 - [ ] **Louis pilot group:** target Sep/Oct/Dec small group run-through
 - [ ] **Analytics:** optional — who signed in (Supabase auth logs); no note content logging
 
-**Owner:** Louis + James correspondence; no code required until banner/email decision is made.
+**Owner:** Louis + James; Inka for WordPress.
 
 ---
 

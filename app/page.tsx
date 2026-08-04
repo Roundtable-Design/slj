@@ -7,8 +7,10 @@ import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { buildNavChapters } from "@/lib/nav-chapters";
 import {
   COURSE_AUTHOR,
+  COURSE_INFO_EMAIL,
   COURSE_SUBTITLE,
   COURSE_TITLE,
+  PRINT_VERSION_MAILTO,
 } from "@/lib/site-branding";
 
 export default async function LandingPage() {
@@ -41,6 +43,16 @@ export default async function LandingPage() {
           </h1>
           <p className="slj-muted mt-6 font-serif text-2xl leading-tight md:text-3xl">
             {COURSE_AUTHOR}
+          </p>
+          <p className="slj-muted mt-6 font-sans text-sm leading-6">
+            A print version of this course is also available.{" "}
+            <a
+              href={PRINT_VERSION_MAILTO}
+              className="text-[var(--slj-text)] underline underline-offset-2 hover:opacity-80"
+            >
+              Email {COURSE_INFO_EMAIL}
+            </a>{" "}
+            to request a copy.
           </p>
           <div className="mt-8">
             <Link href="/auth/sign-in" className="slj-button inline-flex px-5 py-3 text-sm">

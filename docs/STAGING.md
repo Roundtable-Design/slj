@@ -1,8 +1,8 @@
 # Staging — slj.round-table.co.uk
 
 **URL:** https://slj.round-table.co.uk  
-**Git branch:** `chore/neon-authjs-migrate` (domain assigned to this branch)  
-**Stack:** Neon + Auth.js + Drizzle (not production TFW yet)
+**Git branch:** historically `chore/neon-authjs-migrate` (domain may still point at that branch)  
+**Stack:** Neon + Auth.js + Drizzle (same stack as production after Aug 2026 cutover)
 
 ## Access
 
@@ -20,6 +20,7 @@ pnpm exec playwright test --config=playwright.staging.config.ts \
 
 ## Notes
 
-- Production `slj.talksfromthewarehouse.co.uk` remains on `main` (Supabase) until cutover.
+- Production `slj.talksfromthewarehouse.co.uk` is on `main` with **Neon + Auth.js + Drizzle** (cut over Aug 2026).
+- Staging keeps HTTP Basic Auth via `STAGING_BASIC_AUTH*` / host `slj.round-table.co.uk` only — not enabled on production.
 - Vercel SSO protection was disabled on this project so the custom staging domain is reachable; app-level basic auth gates staging.
 - Neon resource: `slj-neon` (Vercel Marketplace).

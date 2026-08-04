@@ -43,13 +43,14 @@
 
 ---
 
-## Deferred (do not start without Louis/James)
+## Active — T9 public launch
 
-**T9 — Public launch** (see `docs/plans/James-Signoff-And-Maturity-Plan.md` Part 3):
+Canonical plan: [`docs/plans/T9-Public-Launch.md`](plans/T9-Public-Launch.md) (Inka draft, `info@` checks, 6-month toast removal).
 
-- TFW banner (“Now available”) + remove taster page
-- MailChimp email to subscriber list
-- Access policy (open vs barrier like Faith in the Soil)
+- Access: open link from TFW (decided)
+- Remaining: Inka WordPress (toast + header menu), `info@` inbox ownership + SMTP From, MailChimp, pilot group
+
+## Deferred
 
 **M5 — RLS policy tests** (optional, when groups are actively used)
 

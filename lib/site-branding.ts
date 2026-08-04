@@ -41,4 +41,11 @@ export const TALKS_FROM_THE_WAREHOUSE_URL = "https://talksfromthewarehouse.co.uk
 
 export const TALKS_FROM_THE_WAREHOUSE_LABEL = "Talks from the Warehouse";
 
+/** Shared contact for print requests and (planned) replyable course email. */
+export const COURSE_INFO_EMAIL = "info@talksfromthewarehouse.co.uk";
+
+export const PRINT_VERSION_MAILTO = `mailto:${COURSE_INFO_EMAIL}?subject=${encodeURIComponent(
+  "Request for print version — Simplicity Love & Justice"
+)}`;
+
 export const PREFACE_HREF = "/course/04-preface";

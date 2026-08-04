@@ -7,6 +7,9 @@ test.describe("Auth smoke", () => {
       page.getByRole("heading", { name: "Simplicity Love & Justice", level: 1 })
     ).toBeVisible();
     await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /info@talksfromthewarehouse\.co\.uk/i })
+    ).toHaveAttribute("href", /mailto:info@talksfromthewarehouse\.co\.uk/);
   });
 
   test("course content is readable in e2e smoke mode", async ({ page }) => {
@@ -23,6 +26,9 @@ test.describe("Auth smoke", () => {
     await expect(
       page.getByRole("link", { name: /Talks from the Warehouse/i })
     ).toHaveAttribute("href", "https://talksfromthewarehouse.co.uk");
+    await expect(
+      page.getByRole("link", { name: /info@talksfromthewarehouse\.co\.uk/i })
+    ).toHaveAttribute("href", /mailto:info@talksfromthewarehouse\.co\.uk/);
   });
 
   test("course sidebar links back to Talks from the Warehouse", async ({ page }) => {

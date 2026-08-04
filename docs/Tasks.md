@@ -134,13 +134,18 @@ James approved the course for release. See **[plans/James-Signoff-And-Maturity-P
 - [x] Footnote [2] “Cited in” link: display title “Introduction” + reliable hash scroll
 - [x] E2e assertions for sign-off fixes; deployed to production
 
-## T9 — Public launch (deferred)
+## T9 — Public launch
 
-Distribution via Talks from the Warehouse — **back burner** until James decides access model and email copy.
+Access model decided: **open link from Talks from the Warehouse**. Full plan: [plans/T9-Public-Launch.md](plans/T9-Public-Launch.md).
 
-- [ ] TFW banner + remove taster page
-- [ ] MailChimp announcement to subscriber list
-- [ ] Access policy decision (open vs barrier)
+- [ ] TFW toast banner (copy: “Simplicity, Love and Justice, a 10-week study course, is now digital.”) — Inka / WordPress
+- [ ] TFW header menu item → SLJ — Inka / WordPress
+- [ ] Remove TFW “coming shortly” / taster copy
+- [x] SLJ login + landing: print version available + mailto `info@talksfromthewarehouse.co.uk`
+- [ ] Confirm who receives `info@` (Rackspace / emailsrvr); Louis + James can read print requests
+- [ ] Send course auth/invite email from `info@` (or replyable address into that inbox) via Supabase custom SMTP
+- [ ] MailChimp announcement to subscriber list (James copy)
+- [ ] After ~6 months: remove TFW toast only; keep header menu (TARS reminder due 2027-02-04)
 
 See [plans/James-Signoff-And-Maturity-Plan.md](plans/James-Signoff-And-Maturity-Plan.md) Part 3.
 
