@@ -146,7 +146,19 @@
   }
 
   .slj-reader-column {
-    @apply mx-auto w-full max-w-[72ch];
+    @apply relative mx-auto w-full max-w-[72ch];
+  }
+
+  /**
+   * Signed-in interactive reader: same 72ch measure, with reserved right
+   * gutter so notes can sit beside the column without stealing width from it.
+   */
+  .slj-reader-column--with-notes {
+    @apply relative mx-auto w-full max-w-[min(100%,calc(72ch+1rem+15rem))] pr-0 md:pr-[calc(1rem+15rem)];
+  }
+
+  .slj-reader-column--with-notes .slj-reader-measure {
+    @apply w-full max-w-[72ch];
   }
 
   /** Bible quotes: stronger rule + caption (see BlockContent parseBibleQuoteContent). */

@@ -331,15 +331,20 @@ export function CourseReader({
     }
   }, [chapterId]);
 
-  const readerColumnClass = "slj-reader-blocks slj-reader-column";
+  const readerColumnClass = user
+    ? "slj-reader-blocks slj-reader-column--with-notes"
+    : "slj-reader-blocks slj-reader-column";
 
   return (
     <div className="min-w-0 w-full max-w-[min(100%,90rem)]">
       {isInteractive && (
         <nav
-          className="mb-8 slj-card p-5 font-sans text-sm slj-reader-column"
+          className={`mb-8 slj-card p-5 font-sans text-sm ${
+            user ? "slj-reader-column--with-notes" : "slj-reader-column"
+          }`}
           aria-label="Table of contents"
         >
+          <div className={user ? "slj-reader-measure" : undefined}>
           <h2 className="slj-faint mb-3 font-sans text-xs uppercase tracking-[0.18em]">
             In this chapter
           </h2>
@@ -403,33 +408,40 @@ export function CourseReader({
               );
             })}
           </ul>
+          </div>
         </nav>
       )}
 
-      <article className="slj-shell p-6 font-serif md:p-10">
+      <article className="slj-shell overflow-x-visible p-6 font-serif md:p-10">
         <ChapterPager
           prevChapter={prevChapter}
           nextChapter={nextChapter}
-          className="mb-8 border-b border-[var(--slj-border)] pb-6 slj-reader-column"
+          className={`mb-8 border-b border-[var(--slj-border)] pb-6 ${
+            user ? "slj-reader-column--with-notes" : "slj-reader-column"
+          }`}
         />
         <div className={readerColumnClass}>
           {!isInteractive && !skipShellHeader ? (
-            <header className="mb-8 border-b border-[var(--slj-border)] pb-4">
+            <header className="mb-8 border-b border-[var(--slj-border)] pb-4 slj-reader-measure">
               <h1 className="font-serif text-4xl font-semibold leading-none text-[var(--slj-text)]">
                 {displayTitle}
               </h1>
             </header>
           ) : null}
           {isInteractive && sessionLabel ? (
-            <p className="slj-faint -mt-2 mb-6 font-sans text-xs uppercase tracking-[0.18em]">
+            <p className="slj-faint -mt-2 mb-6 font-sans text-xs uppercase tracking-[0.18em] slj-reader-measure">
               {sessionLabel}
             </p>
           ) : null}
           {isInteractive && loading ? (
-            <p className="slj-muted mb-6 font-sans text-sm">Loading notes…</p>
+            <p className="slj-muted mb-6 font-sans text-sm slj-reader-measure">
+              Loading notes…
+            </p>
           ) : null}
           <CourseChapterHrefProvider href={`/course/${chapterId}`}>
-            {renderedBlocks}
+            <div className={user ? "slj-reader-measure" : undefined}>
+              {renderedBlocks}
+            </div>
           </CourseChapterHrefProvider>
         </div>
       </article>
@@ -437,7 +449,9 @@ export function CourseReader({
       <ChapterPager
         prevChapter={prevChapter}
         nextChapter={nextChapter}
-        className="mt-8 flex justify-between border-t border-[var(--slj-border)] pt-6 slj-reader-column"
+        className={`mt-8 flex justify-between border-t border-[var(--slj-border)] pt-6 ${
+          user ? "slj-reader-column--with-notes" : "slj-reader-column"
+        }`}
       />
     </div>
   );

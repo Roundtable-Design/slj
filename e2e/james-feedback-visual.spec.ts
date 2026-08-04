@@ -1,12 +1,15 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("James feedback (layout + content)", () => {
-  test("margin column is under one third of viewport on session chapter", async ({
+  test("margin notes sit beside the reading column without shrinking it", async ({
     page,
   }) => {
     await page.goto("/course/09-session-one");
-    const row = page.locator('[data-block-row]').first();
+    const row = page.locator("[data-block-row]").first();
     await expect(row).toBeVisible();
+    const text = row.locator(":scope > div").first();
+    const textBox = await text.boundingBox();
+    expect(textBox?.width ?? 0).toBeGreaterThan(480);
     const margin = row.locator(".margin-notes-column");
     if ((await margin.count()) > 0) {
       const box = await margin.first().boundingBox();

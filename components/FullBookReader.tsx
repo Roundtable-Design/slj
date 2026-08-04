@@ -214,11 +214,17 @@ export function FullBookReader({
             <div
               className={
                 chapter.mode === "interactive"
-                  ? "slj-reader-blocks"
+                  ? user
+                    ? "slj-reader-blocks slj-reader-column--with-notes"
+                    : "slj-reader-blocks slj-reader-column"
                   : "slj-reader-blocks mx-auto max-w-[72ch]"
               }
             >
-              {chapterNodes}
+              {chapter.mode === "interactive" && user ? (
+                <div className="slj-reader-measure">{chapterNodes}</div>
+              ) : (
+                chapterNodes
+              )}
             </div>
           </CourseChapterHrefProvider>
         </section>

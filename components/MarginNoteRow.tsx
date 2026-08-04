@@ -47,20 +47,15 @@ export function MarginNoteRow({
     (attributionBlock != null && activeBlockId === attributionBlock.block_id);
   const showComposer = isSignedIn && isActive;
   const showMarginColumn = isSignedIn && (notes.length > 0 || showComposer);
-  const textMaxWidthClass = "md:max-w-[72ch]";
 
   return (
     <div
       data-block-row={block.block_id}
-      className={`grid grid-cols-1 gap-x-4 items-start ${
+      className={`relative w-full ${
         dense ? "gap-y-1 py-0" : "gap-y-3 py-1"
-      } ${
-        showMarginColumn
-          ? "md:grid-cols-[minmax(0,72ch)_min(256px,28vw)] md:max-w-[calc(72ch+min(256px,28vw)+1rem)]"
-          : `${textMaxWidthClass}`
       } ${isActive ? "rounded bg-[var(--slj-active)]" : ""}`}
     >
-      <div className={`min-w-0 ${showMarginColumn ? "" : "md:w-full"}`}>
+      <div className="min-w-0 w-full">
         <BlockAnchorProvider blockId={block.block_id}>
           <BlockWithNoteAction
             block={block}
@@ -75,7 +70,7 @@ export function MarginNoteRow({
       </div>
       {showMarginColumn ? (
         <div
-          className="margin-notes-column min-w-0 md:max-h-[50vh] md:overflow-y-auto"
+          className="margin-notes-column mt-3 min-w-0 md:absolute md:left-[calc(100%+1rem)] md:top-0 md:mt-0 md:w-[min(15rem,22vw)] md:max-h-[50vh] md:overflow-y-auto"
           aria-label="Notes for this paragraph"
         >
           {notes.map((note) => (
