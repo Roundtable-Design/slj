@@ -62,7 +62,7 @@ export function MarginNoteRow({
         dense ? "py-0" : "py-1"
       } ${
         useTwoCol
-          ? "grid grid-cols-1 items-start gap-x-0 gap-y-3 md:grid-cols-[minmax(0,72ch)_minmax(10.5rem,13rem)] md:gap-x-6 lg:grid-cols-[minmax(0,72ch)_minmax(11rem,14rem)] lg:gap-x-8"
+          ? "grid grid-cols-1 items-start gap-x-0 gap-y-3 md:grid-cols-[minmax(0,65ch)_minmax(10.5rem,13rem)] md:gap-x-10 lg:grid-cols-[minmax(0,65ch)_minmax(11rem,14rem)] lg:gap-x-12"
           : "w-full"
       } ${isActive ? "rounded bg-[var(--slj-active)]" : ""}`}
     >

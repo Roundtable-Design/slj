@@ -442,24 +442,24 @@ export function BlockWithNoteAction({
           onAddOrEditNote(block.block_id);
         }
       }}
-      className={`group/block relative flex rounded transition-colors ${
-        dense
-          ? "-mx-1 items-start px-1 py-0"
-          : "-mx-2 items-center px-2 py-1"
+      className={`group/block relative rounded transition-colors ${
+        dense ? "py-0" : "py-1"
       } ${
         isActive ? "bg-[var(--slj-active)]" : "hover:bg-[var(--slj-hover)] focus-within:bg-[var(--slj-hover)]"
       }`}
     >
-      <div className={`min-w-0 flex-1 ${dense ? "pr-10" : "pr-12"}`}>
-        {blockContent}
-      </div>
+      {/*
+        Keep the reading measure full-width (same as static chapters).
+        The note control sits just past the text edge — never shrinks the column.
+      */}
+      <div className="min-w-0 w-full">{blockContent}</div>
       <button
         type="button"
         onClick={() => onAddOrEditNote(block.block_id)}
-        className={`absolute flex items-center justify-center rounded border border-transparent bg-transparent text-[var(--slj-text-muted)] transition-colors hover:border-[var(--slj-border)] hover:text-[var(--slj-text)] focus-visible:border-[var(--slj-border)] focus-visible:text-[var(--slj-text)] md:opacity-0 md:group-hover/block:opacity-100 md:group-focus-within/block:opacity-100 ${
+        className={`absolute z-10 flex items-center justify-center rounded border border-transparent bg-[var(--slj-surface)] text-[var(--slj-text-muted)] transition-colors hover:border-[var(--slj-border)] hover:text-[var(--slj-text)] focus-visible:border-[var(--slj-border)] focus-visible:text-[var(--slj-text)] md:left-full md:right-auto md:ml-2 md:opacity-0 md:group-hover/block:opacity-100 md:group-focus-within/block:opacity-100 ${
           dense
-            ? "right-1 top-0.5 h-8 w-8"
-            : "right-2 top-1/2 h-9 w-9 -translate-y-1/2"
+            ? "right-0 top-0.5 h-8 w-8"
+            : "right-0 top-1/2 h-9 w-9 -translate-y-1/2"
         }`}
         aria-label={hasNote ? "Edit note" : "Add note for this paragraph"}
       >

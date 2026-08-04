@@ -225,7 +225,7 @@ export function FullBookReader({
                   ? reserveMargin
                     ? "slj-reader-blocks slj-reader-column--notes-open"
                     : "slj-reader-blocks slj-reader-column"
-                  : "slj-reader-blocks mx-auto max-w-[72ch]"
+                  : "slj-reader-blocks mx-auto max-w-[65ch]"
               }
             >
               {chapterNodes}

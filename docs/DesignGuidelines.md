@@ -69,11 +69,11 @@ Styling rules:
 - Active item uses subtle indicator (left border, underline, or weight), not color
 
 ## Reader layout (the core experience)
-- Reading width: **60–75ch**
+- Reading width: **65ch** (within the 60–75ch / ~50–75 character best-practice band; 65–66ch is the usual editorial target)
 - Line height: **1.7** for body text
 - Paragraph spacing: generous (16–20px)
-- Content column: centered, `max-w-prose` style
-- Notes panel: fixed width **360–420px** with subtle border
+- Content column: centered, `max-w-prose` style (`65ch`)
+- Notes: beside the measure when present; under ~⅓ viewport width
 
 ## Notes UX rules
 - Notes must feel like margin notes:

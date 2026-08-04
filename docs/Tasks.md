@@ -174,7 +174,7 @@ See [plans/James-Signoff-And-Maturity-Plan.md](plans/James-Signoff-And-Maturity-
 ## James May 2026 review (James Odgers)
 
 - [x] End-of-book notes chapter (`28-notes.md`) + `[n]` hyperlinks in reader
-- [x] Static chapter reading measure (`max-w-[72ch]` on foreword, intro, etc.)
+- [x] Static chapter reading measure (`max-w-[65ch]` on foreword, intro, etc.)
 - [x] Introduction: private margin notes how-to
 - [x] Budgeting worksheet: Mrs R. E. Joyce example heading
 - [x] Remove empty `08-further-reading-and-resources.md` stub; docs/index updated
