@@ -4,7 +4,7 @@ test.describe("James feedback (layout + content)", () => {
   test("margin notes sit beside the reading column without shrinking it", async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.setViewportSize({ width: 1100, height: 800 });
     await page.goto("/course/11-session-two");
     const column = page.locator("article .slj-reader-column").first();
     await expect(column).toBeVisible();
@@ -16,15 +16,15 @@ test.describe("James feedback (layout + content)", () => {
 
     const headingBox = await heading.boundingBox();
     const textBoxBefore = await text.boundingBox();
-    expect(textBoxBefore?.width ?? 0).toBeGreaterThan(480);
+    expect(textBoxBefore?.width ?? 0).toBeGreaterThan(400);
     // Heading and body share the same centered measure (not a split layout).
     expect(Math.abs((headingBox?.x ?? 0) - (textBoxBefore?.x ?? 0))).toBeLessThan(24);
 
-    // Below 2xl, notes stack under the paragraph (not absolute in the gutter).
+    // Below xl, notes stack under the paragraph (not absolute in the gutter).
     const stackedNoteClass = await row.evaluate((el) => {
       const note = document.createElement("div");
       note.className =
-        "margin-notes-column mt-3 min-w-0 2xl:absolute 2xl:left-full 2xl:top-0 2xl:mt-0 2xl:ml-6 2xl:w-[14rem]";
+        "margin-notes-column mt-3 min-w-0 xl:absolute xl:left-full xl:top-0 xl:mt-0 xl:ml-5 xl:w-[12.5rem]";
       note.textContent = "Test note";
       el.appendChild(note);
       return getComputedStyle(note).position;
@@ -43,8 +43,8 @@ test.describe("James feedback (layout + content)", () => {
       expect((listTextBox?.x ?? 0) - (itemBox?.x ?? 0)).toBeLessThan(48);
     }
 
-    // Wide enough for side margin notes.
-    await page.setViewportSize({ width: 1600, height: 900 });
+    // xl+: side margin notes.
+    await page.setViewportSize({ width: 1400, height: 900 });
     const sideNotePosition = await row.evaluate((el) => {
       const note = el.querySelector(".margin-notes-column");
       return note ? getComputedStyle(note).position : null;

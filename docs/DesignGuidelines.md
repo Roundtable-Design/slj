@@ -73,7 +73,7 @@ Styling rules:
 - Line height: **1.7** for body text
 - Paragraph spacing: generous (16–20px)
 - Content column: centered, `max-w-prose` style (`65ch`)
-- Notes: hang in the right margin beside the measure when the viewport is wide enough (`2xl` / 1536px+); stack under the paragraph earlier so notes never clip the shell edge
+- Notes: hang in the right margin beside the measure from `xl` (1280px+); stack under the paragraph on smaller widths so notes don’t clip the shell
 
 ## Notes UX rules
 - Notes must feel like margin notes:
