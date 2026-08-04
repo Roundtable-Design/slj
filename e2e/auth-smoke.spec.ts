@@ -7,6 +7,7 @@ test.describe("Auth smoke", () => {
       page.getByRole("heading", { name: "Simplicity Love & Justice", level: 1 })
     ).toBeVisible();
     await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Create account" })).toBeVisible();
     await expect(
       page.getByRole("link", { name: /info@talksfromthewarehouse\.co\.uk/i })
     ).toHaveAttribute("href", /mailto:info@talksfromthewarehouse\.co\.uk/);
