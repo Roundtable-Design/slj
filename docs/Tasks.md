@@ -142,8 +142,9 @@ Access model decided: **open link from Talks from the Warehouse**. Full plan: [p
 - [ ] TFW header menu item → SLJ — Inka / WordPress
 - [ ] Remove TFW “coming shortly” / taster copy
 - [x] SLJ login + landing: print version available + mailto `info@talksfromthewarehouse.co.uk`
-- [ ] Confirm who receives `info@` (Rackspace / emailsrvr); Louis + James can read print requests
-- [ ] Send course auth/invite email from `info@` (or replyable address into that inbox) via Supabase custom SMTP
+- [ ] Confirm who receives `info@` (see [`docs/InfoEmail-Mailbox.md`](./InfoEmail-Mailbox.md)); Louis + James can read print requests
+- [x] Course auth email From `info@…` via Resend / Auth.js ([`docs/AuthEmailBranding.md`](./AuthEmailBranding.md))
+- [ ] Mailchimp From `info@`: finish DKIM (`k1` missing) — handoff in InfoEmail-Mailbox.md
 - [ ] MailChimp announcement to subscriber list (James copy)
 - [ ] After ~6 months: remove TFW toast only; keep header menu (TARS reminder due 2027-02-04)
 

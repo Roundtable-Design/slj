@@ -38,14 +38,18 @@
 
 ### C. Email / `info@` (before or at go-live)
 
-DNS today: MX → **emailsrvr.com** (Rackspace Email), SPF includes `emailsrvr.com`.
+**Full handoff (routing, Cloudways, Mailchimp):** [`docs/InfoEmail-Mailbox.md`](../InfoEmail-Mailbox.md)
 
-- [ ] Confirm who receives `info@talksfromthewarehouse.co.uk` (mailbox / forwards / shared inbox)
-- [ ] Ensure Louis (and/or James) can read print-version requests and general replies
-- [ ] Plan Supabase custom SMTP so magic-link / invite emails send **from** `info@talksfromthewarehouse.co.uk` (or a dedicated address that replies into that inbox)
-- [ ] Document reply handling: print requests vs sign-in questions
+DNS today: MX → **emailsrvr.com** (Rackspace Email via Cloudways), SPF includes `emailsrvr.com`.  
+`info@` is an **alias** of `devotional@`; that mailbox **forwards** to `support@round-table.co.uk` (enable **Save copies** if James should see mail in Apple Mail / webmail).
 
-See also [AuthEmailBranding.md](../AuthEmailBranding.md) (custom SMTP section).
+- [ ] Confirm who receives / owns day-to-day `info@` replies (Roundtable `support@` vs James) — see handoff doc
+- [ ] Ensure Louis and/or James can read print-version requests and general replies
+- [x] Auth.js / Resend magic links send **From** `info@talksfromthewarehouse.co.uk` (see [AuthEmailBranding.md](../AuthEmailBranding.md))
+- [ ] Mailchimp: finish domain auth (`k1._domainkey` missing) before using `info@` as campaign From
+- [ ] Document final reply-handling policy in InfoEmail-Mailbox.md when decided
+
+See also [AuthEmailBranding.md](../AuthEmailBranding.md).
 
 ### D. After ~6 months
 

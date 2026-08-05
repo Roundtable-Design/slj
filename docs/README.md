@@ -13,6 +13,7 @@ Start here:
 - `Testing.md` — draft approach now, hardening later
 - `ReleaseChecklist.md` — draft release steps and later production steps
 - `plans/T9-Public-Launch.md` — TFW toast + menu, Inka draft, `info@` / print mailto, 6-month toast removal
+- `InfoEmail-Mailbox.md` — **`info@` handoff for Inkar:** Rackspace/Cloudways routing, forwarding, Mailchimp DKIM
 - `plans/margin-notes-layout.md` — implementation plan: margin notes beside paragraphs (James feedback)
 - `DEPLOYMENT.md` — Vercel + Supabase + DNS deployment checklist (slj.talksfromthewarehouse.co.uk)
 
