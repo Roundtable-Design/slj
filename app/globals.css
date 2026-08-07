@@ -141,14 +141,8 @@
     row-gap: 1.25rem; /* 20px — DesignGuidelines paragraph spacing */
   }
 
-  /*
-   * Left-align body copy (not justify). Full justification looks bookish in
-   * print but on screen creates sparse “rivers” — e.g. a short line of names
-   * ahead of a long URL stretched edge-to-edge. Left align matches common
-   * web readers and stays even at every line length.
-   */
   .slj-reader-blocks p {
-    text-align: start;
+    text-align: justify;
   }
 
   /*
