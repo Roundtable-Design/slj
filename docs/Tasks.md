@@ -121,7 +121,7 @@
 ## Upgrade tasks (later, “production hardening”)
 - [ ] CI (GitHub Actions): lint/typecheck/test
 - [ ] RLS policy tests with Supabase tools/emulator
-- [ ] Basic analytics/reporting dashboard (optional) — Vercel Web Analytics + Better Stack/Sentry: see [`docs/Monitoring.md`](./Monitoring.md)
+- [x] Basic analytics/reporting dashboard (optional) — Vercel Web Analytics + Better Stack/Sentry: see [`docs/Monitoring.md`](./Monitoring.md) (Inkar setup Aug 2026)
 - [ ] Weekly usage digest email (Vercel Cron + Web Analytics API + Neon aggregates + Resend) — plan in [`docs/Monitoring-Setup-Brief-Inkar.md`](./Monitoring-Setup-Brief-Inkar.md) §5
 
 ## James Jul 2026 sign-off (15 Jul call)

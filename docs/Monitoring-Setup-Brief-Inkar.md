@@ -173,19 +173,19 @@ Until Phase B ships: use Mailchimp Reports + Vercel Analytics UI manually each w
 
 ### Inkar (this week)
 
-- [ ] Vercel Git connected to **`Roundtable-Design/slj`**; production deploy succeeds  
-- [ ] Sentry project `slj` + DSN on Vercel Production  
-- [ ] Production redeploy after Sentry env vars  
-- [ ] Better Stack monitors for `/api/health` + homepage  
-- [ ] Louis receives a test downtime / alert on his phone  
-- [ ] Web Analytics enabled on the Vercel project  
-- [ ] Mailchimp SLJ CTAs use the **UTM tracking URL** from §4  
+- [x] Vercel Git connected to **`Roundtable-Design/slj`**; production deploy succeeds  
+- [x] Sentry project `slj` + DSN on Vercel Production  
+- [x] Production redeploy after Sentry env vars  
+- [x] Better Stack monitors for `/api/health` + homepage  
+- [x] Louis receives a test downtime / alert on his phone  
+- [x] Web Analytics enabled on the Vercel project  
+- [x] Mailchimp SLJ CTAs use the **UTM tracking URL** from §4  
 
 ### Engineering (Phase B — after Inkar)
 
 - [ ] Weekly digest cron + Resend email live; Louis receives a test Monday (or forced) run  
 
-Ping Louis when Inkar’s checklist is green.
+Inkar’s checklist is green (Aug 2026). Phase B remains for Louis / eng.
 
 ---
 
