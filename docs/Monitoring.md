@@ -33,6 +33,18 @@
 2. Monitors created via API with `email: true` (and push via app once logged in).
 3. Optional: Better Stack → webhook → OpenClaw/Telegram for a second loud channel (same pattern as email-router priority).
 
+## Weekly usage email — expectations
+
+**Vercel Web Analytics does not send a built-in weekly email** covering sign-ins, Mailchimp clicks, or “what users did.”
+
+| Question | Where the answer lives (V1) |
+|----------|-------------------------------|
+| Hit sign-in / course pages? | Vercel Analytics (filter by path) |
+| Clicked Mailchimp CTA? | Mailchimp campaign report + UTM landings |
+| Logged in / notes / progress? | Needs custom `track()` events and/or Neon queries — not automatic yet |
+
+Inkar brief: [`Monitoring-Setup-Brief-Inkar.md`](./Monitoring-Setup-Brief-Inkar.md) (includes Mailchimp UTM + Vercel Git reconnect).
+
 ---
 
 ## Secrets Louis must provide once
