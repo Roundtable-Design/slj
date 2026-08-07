@@ -6,7 +6,7 @@
 **Repo (new home):** https://github.com/Roundtable-Design/slj  
 **Repo context:** [`docs/Monitoring.md`](./Monitoring.md) (stack rationale)
 
-Do this so Louis gets phone alerts if the site falls over, deploys keep working after the GitHub org move, Mailchimp traffic is measurable, and we capture errors + basic usage.
+Do this so Louis gets phone alerts if the site falls over, deploys keep working after the GitHub org move, Mailchimp traffic is measurable (UTM tracking link), errors are captured, and the **planned Monday usage email** has the data it needs (see §5 — eng builds the cron after this).
 
 ---
 
@@ -122,12 +122,12 @@ Vercel Analytics alone cannot send that email. We build a small **cron + Resend*
 | Pageviews / visitors (site total) | Vercel Web Analytics API |
 | Hits on `/auth/sign-in` | Vercel API filter `requestPath` |
 | Landings from Mailchimp (`utm_source=mailchimp`) | Vercel API UTM filter — **requires §4 link** |
-| New accounts / successful sign-ins (count only) | Neon (Auth.js tables) — aggregates, never emails/PII in the body beyond counts |
+| New + all accounts (email, name, joined) | Neon `user` table — admin digest only (`WEEKLY_DIGEST_TO`); excludes `@example.com` / e2e test users |
 | Notes written / sections marked complete (counts) | Neon aggregates — **never note text** |
 | Top course paths this week | Vercel API |
 | Errors / downtime summary (optional one-liner) | Sentry / Better Stack APIs |
 
-**Out of scope for v1 of the digest:** full Mailchimp open rates inside our email (use Mailchimp Reports for that), Session Replay, per-user activity lists.
+**Out of scope for v1 of the digest:** full Mailchimp open rates inside our email (use Mailchimp Reports for that), Session Replay, note bodies. Account **emails are included** for Louis/admin recipients only.
 
 ### Architecture (boring)
 
@@ -145,7 +145,7 @@ Vercel Cron (Mon ~09:00 Europe/London)
 | Auth | `CRON_SECRET` env on Vercel; reject unauthenticated calls |
 | Analytics token | Vercel token with Web Analytics read + `projectId` / `teamId` as env |
 | Email | Existing **Resend** account (same stack as magic links) |
-| Privacy | Counts only; never log or email note bodies |
+| Privacy | Account emails OK for admin digest; never log or email note bodies |
 
 ### Phases
 

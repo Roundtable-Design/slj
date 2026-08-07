@@ -38,7 +38,7 @@ Better Stack **free** includes email + Slack only (not their iOS app push). For 
    - `BETTER_STACK_WEBHOOK_SECRET` (random string)
 3. Better Stack outgoing webhook →  
    `https://slj.talksfromthewarehouse.co.uk/api/webhooks/betterstack?secret=…`  
-   (`incident_change`, started + resolved). Route sends **emergency** Pushover on down, normal on recovery.
+   (`incident_change`, started + resolved). Route sends **high-priority** Pushover on down (Critical Alert capable, **no endless retries**), normal on recovery. Set `PUSHOVER_EMERGENCY=1` only if you want emergency priority (retries until you acknowledge).
 4. Slack `#alarms` can stay as a quiet log.
 
 ## Weekly usage email — plan
@@ -46,9 +46,9 @@ Better Stack **free** includes email + Slack only (not their iOS app push). For 
 **Vercel Web Analytics does not send a built-in weekly email.** Planned system (documented for Inkar + eng):
 
 - **Mailchimp CTA** = SLJ URL with UTMs (Vercel’s “referral” equivalent — no separate Vercel short link).
-- **Monday digest** = Vercel Cron → `/api/cron/weekly-digest` → Web Analytics API + Neon aggregates → **Resend** email (counts only; never note text).
+- **Monday digest** = Vercel Cron → `/api/cron/weekly-digest` → Web Analytics API + Neon **account list** (emails for admin recipients) + activity counts → **Resend**.
 
-Full plan + copy-paste Mailchimp URL: [`Monitoring-Setup-Brief-Inkar.md`](./Monitoring-Setup-Brief-Inkar.md) §4–5.
+Full plan + Mailchimp URL: [`Monitoring-Setup-Brief-Inkar.md`](./Monitoring-Setup-Brief-Inkar.md) §4–5.
 
 Until that cron ships: Mailchimp Reports + Vercel Analytics UI manually.
 
