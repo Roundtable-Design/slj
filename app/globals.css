@@ -146,6 +146,16 @@
   }
 
   /*
+   * Let long URLs/links break mid-string so justify doesn’t stretch a short
+   * line of words left behind an unbreakable link (e.g. Preface names ahead
+   * of www.cactusfoodandfaith.com).
+   */
+  .slj-reader-blocks a {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /*
    * Reading measure: 65ch — mid-band of the usual 45–75cpl guidance,
    * and the same default as Tailwind Typography (`prose`). See DesignGuidelines.
    * Margin notes hang absolutely to the right of this column (see MarginNoteRow)
