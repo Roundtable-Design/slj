@@ -26,7 +26,9 @@ function isDownEvent(event: string | undefined, resolvedAt: string | null | unde
   const e = (event ?? "").toLowerCase();
   if (e.includes("resolv")) return false;
   if (e.includes("start") || e.includes("reopen")) return true;
-  // Default Better Stack payloads may omit event; treat unresolved as down.
+  // Prefer resolved_at when event is missing (default Better Stack template).
+  if (resolvedAt) return false;
+  if (e === "" || e === "$event") return resolvedAt == null;
   return !resolvedAt;
 }
 
@@ -48,10 +50,8 @@ async function sendPushover(opts: {
   body.set("title", opts.title.slice(0, 250));
   body.set("message", opts.message.slice(0, 1024));
   body.set("priority", String(opts.priority));
-  // Tag so we can cancel emergencies via API if needed.
   body.set("tags", "slj-uptime");
   if (opts.priority === 2) {
-    // Emergency retries until ack — only when explicitly enabled.
     body.set("retry", "60");
     body.set("expire", "180");
     body.set("sound", "siren");
@@ -108,27 +108,45 @@ export async function POST(req: NextRequest) {
   }
 
   const attrs = payload.data?.attributes ?? {};
-  const name = attrs.name?.trim() || "Monitor";
-  const cause = attrs.cause?.trim() || "Unknown cause";
+  const name = attrs.name?.trim() || "";
+  const cause = attrs.cause?.trim() || "";
   const url = attrs.url?.trim();
-  const event = payload.event;
+  const event = payload.event?.trim();
+
+  // Broken/empty Better Stack templates previously produced "Monitor / Unknown cause"
+  // noise. Skip incomplete payloads instead of notifying.
+  const looksPlaceholder =
+    !name ||
+    name === "Monitor" ||
+    !cause ||
+    cause === "Unknown cause" ||
+    event === "$EVENT" ||
+    (url?.includes(".vercel.app") ?? false);
+
+  if (looksPlaceholder && (!name || name === "Monitor")) {
+    return NextResponse.json({
+      ok: true,
+      skipped: true,
+      reason: "incomplete_payload",
+    });
+  }
+
   const down = isDownEvent(event, attrs.resolved_at);
 
-  const title = down ? `🔴 ${name}` : `🟢 ${name} recovered`;
+  const title = down ? `🔴 ${name || "Monitor"}` : `🟢 ${name || "Monitor"} recovered`;
   const lines = [
-    cause,
+    cause || null,
     url ? `URL: ${url}` : null,
     event ? `Event: ${event}` : null,
     payload.data?.id ? `Incident: ${payload.data.id}` : null,
   ].filter(Boolean);
 
-  // Priority 1 = high / Critical Alert capable, but does NOT retry forever.
-  // Set PUSHOVER_EMERGENCY=1 for priority 2 (retries until acknowledged).
   const emergency = process.env.PUSHOVER_EMERGENCY === "1";
+  const priority: 0 | 1 | 2 = down ? (emergency ? 2 : 1) : 0;
   const result = await sendPushover({
     title,
-    message: lines.join("\n"),
-    priority: down ? (emergency ? 2 : 1) : 0,
+    message: lines.join("\n") || "Uptime event",
+    priority,
   });
 
   if (!result.ok) {
@@ -142,6 +160,6 @@ export async function POST(req: NextRequest) {
     ok: true,
     down,
     event: event ?? null,
-    priority: down ? (emergency ? 2 : 1) : 0,
+    priority,
   });
 }
