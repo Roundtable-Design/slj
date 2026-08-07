@@ -14,6 +14,7 @@ Start here:
 - `ReleaseChecklist.md` — draft release steps and later production steps
 - `plans/T9-Public-Launch.md` — TFW toast + menu, Inka draft, `info@` / print mailto, 6-month toast removal
 - `InfoEmail-Mailbox.md` — **`info@` handoff for Inkar:** Rackspace/Cloudways routing, forwarding, Mailchimp DKIM
+- `Monitoring.md` — uptime (Better Stack API), Sentry, Vercel Analytics; agent setup script
 - `plans/margin-notes-layout.md` — implementation plan: margin notes beside paragraphs (James feedback)
 - `DEPLOYMENT.md` — Vercel + Supabase + DNS deployment checklist (slj.talksfromthewarehouse.co.uk)
 

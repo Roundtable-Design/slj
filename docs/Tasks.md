@@ -121,7 +121,7 @@
 ## Upgrade tasks (later, “production hardening”)
 - [ ] CI (GitHub Actions): lint/typecheck/test
 - [ ] RLS policy tests with Supabase tools/emulator
-- [ ] Basic analytics/reporting dashboard (optional)
+- [ ] Basic analytics/reporting dashboard (optional) — Vercel Web Analytics + Better Stack/Sentry: see [`docs/Monitoring.md`](./Monitoring.md)
 
 ## James Jul 2026 sign-off (15 Jul call)
 

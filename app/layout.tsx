@@ -5,6 +5,7 @@ import {
   Manrope,
   Source_Serif_4,
 } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { AuthSessionProvider } from "@/components/AuthSessionProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -53,6 +54,7 @@ export default function RootLayout({
         <AuthSessionProvider>
           <ThemeProvider>{children}</ThemeProvider>
         </AuthSessionProvider>
+        <Analytics />
       </body>
     </html>
   );

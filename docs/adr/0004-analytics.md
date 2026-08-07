@@ -4,8 +4,8 @@
 Need simple success metrics without heavy plumbing.
 
 ## Decision
-No event pipeline in V1. Use profile fields + progress to infer WAU and completion.
-Optionally add events/aggregates in production hardening phase.
+No custom event pipeline in V1. Infer engagement from progress where needed.
+**Exception (Aug 2026):** privacy-friendly **Vercel Web Analytics** pageviews + external uptime (Better Stack API) and **Sentry** errors — see [`Monitoring.md`](../Monitoring.md). No GA4 / cookie banner for this baseline.
 
 ## Consequences
-Less granularity, more durability.
+Less granularity than a full product analytics stack; durable and agent-configurable.
