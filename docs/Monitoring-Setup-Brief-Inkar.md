@@ -72,65 +72,106 @@ If you prefer the UI over the script: create the same two HTTP monitors manually
 
 ---
 
-## 3. Vercel Web Analytics — what it can / can’t do
-
-### What you get today (no extra work)
-
-- Dashboard pageviews / visitors for routes like `/`, `/auth/sign-in`, `/course/…`
-- Referrers (when present)
-- **No built-in weekly email digest** that says “N signed in, M completed a chapter”
-- **Does not know “logged in” or “what they did”** by itself — only pages loaded (unless we add custom events later)
-
-### Weekly email updates
-
-**Vercel Analytics does not send a ready-made weekly email report** for funnel metrics. Options:
-
-| Need | Practical approach |
-|------|-------------------|
-| “How many hit sign-in?” | Check Vercel → Analytics → filter path `/auth/sign-in` (manual weekly), **or** later automate via `vercel metrics` / Web Analytics API + a cron email |
-| “How many clicked Mailchimp?” | Use **Mailchimp campaign reports** (opens/clicks) **and** UTM links into SLJ (below) so Vercel can show campaign traffic |
-| “How many logged in / what they did?” | Needs **custom events** (and/or DB queries on Neon). Not available from pageviews alone. Flag for a follow-up task if Louis wants this automated |
-
-For V1: enable Web Analytics + Mailchimp UTMs; Louis reviews the Vercel dashboard (and Mailchimp reports) weekly. Do **not** promise an automatic weekly email from Vercel alone without building a small report job later.
-
-### Enable Web Analytics
+## 3. Vercel Web Analytics — enable now
 
 1. Vercel → **`slj`** → **Analytics** → enable **Web Analytics** if not already on.
 2. Code already includes `@vercel/analytics` in the root layout — no cookie banner needed for this.
 
-**Note:** UTM breakdowns in the Vercel UI may require **Web Analytics Plus** on the team plan. Even without Plus, Mailchimp’s own click stats still work, and landing URLs with UTMs remain best practice.
+**What the dashboard shows today:** pageviews / visitors by path (e.g. `/auth/sign-in`), referrers, and (when UTMs are on links) campaign filters. It does **not** email a weekly funnel report by itself — that is the planned job in §5.
+
+**Note:** Rich UTM breakdowns in the Vercel UI may need **Web Analytics Plus**. Even without Plus, the **API** can still power our digest, and Mailchimp’s own click stats always work.
 
 ---
 
-## 4. Mailchimp — update links with tracking params
+## 4. Mailchimp — tracking link (paste this)
 
-Please **update every SLJ link in the Mailchimp campaign(s)** (including the “Start here” / course CTA) so traffic is attributable.
+Vercel does **not** issue a separate “referral” short link. Tracking works by putting **UTM query params** on the SLJ URL. That is the link Vercel (and our weekly digest) attribute as Mailchimp traffic.
 
-**Canonical destination:**  
-`https://slj.talksfromthewarehouse.co.uk`  
-(or `/auth/sign-in` if the CTA should go straight to sign-in)
-
-**Add UTM query params**, for example:
+**Use this exact URL** for the primary “Start here” / course CTA (copy–paste into Mailchimp):
 
 ```text
 https://slj.talksfromthewarehouse.co.uk/auth/sign-in?utm_source=mailchimp&utm_medium=email&utm_campaign=slj-digital-launch&utm_content=start-here
 ```
 
-Guidelines:
+| Param | Value | Why |
+|-------|--------|-----|
+| `utm_source` | `mailchimp` | Marks email traffic |
+| `utm_medium` | `email` | Channel |
+| `utm_campaign` | `slj-digital-launch` | Stable slug for this launch send (change only for a new campaign) |
+| `utm_content` | `start-here` | Which button/placement |
 
-- `utm_source=mailchimp`
-- `utm_medium=email`
-- `utm_campaign=` a stable slug for this send (e.g. `slj-digital-launch`)
-- `utm_content=` button/placement name if you have multiple links in one email
-- Use the **same campaign slug** across all links in that send
-- Prefer Mailchimp’s merge/tracked links **with** these UTMs still on the final URL (don’t strip query params)
-- After send: check **Mailchimp → Reports** for clicks, and Vercel Analytics / referrers for landings
+Rules:
 
-Also confirm the campaign **From** is `info@talksfromthewarehouse.co.uk` (see [`InfoEmail-Mailbox.md`](./InfoEmail-Mailbox.md)).
+- Update **every** SLJ link in the campaign(s) the same way (vary `utm_content` only if there are multiple CTAs).
+- Keep Mailchimp’s click-tracking wrapper **and** leave these query params on the final destination (don’t strip them).
+- After send: **Mailchimp → Reports** = opens/clicks from the email; Vercel / weekly digest = landings that arrived with these UTMs.
+- Confirm campaign **From** is `info@talksfromthewarehouse.co.uk` (see [`InfoEmail-Mailbox.md`](./InfoEmail-Mailbox.md)).
 
 ---
 
-## 5. Done checklist
+## 5. Planned system: weekly usage email (engineering)
+
+**Goal:** Every Monday morning (UK), email Louis (and optional Roundtable recipients) a short digest — not a dashboard login.
+
+Vercel Analytics alone cannot send that email. We build a small **cron + Resend** job that pulls numbers and emails them. Inkar’s job for this section is mostly §4 (UTM link) + enabling Analytics; Louis/agent builds the job next.
+
+### What the Monday email will include
+
+| Line in the email | Source |
+|-------------------|--------|
+| Pageviews / visitors (site total) | Vercel Web Analytics API |
+| Hits on `/auth/sign-in` | Vercel API filter `requestPath` |
+| Landings from Mailchimp (`utm_source=mailchimp`) | Vercel API UTM filter — **requires §4 link** |
+| New accounts / successful sign-ins (count only) | Neon (Auth.js tables) — aggregates, never emails/PII in the body beyond counts |
+| Notes written / sections marked complete (counts) | Neon aggregates — **never note text** |
+| Top course paths this week | Vercel API |
+| Errors / downtime summary (optional one-liner) | Sentry / Better Stack APIs |
+
+**Out of scope for v1 of the digest:** full Mailchimp open rates inside our email (use Mailchimp Reports for that), Session Replay, per-user activity lists.
+
+### Architecture (boring)
+
+```text
+Vercel Cron (Mon ~09:00 Europe/London)
+  → GET /api/cron/weekly-digest  (Authorization: Bearer CRON_SECRET)
+      → query Vercel Web Analytics API (pageviews, paths, UTMs)
+      → query Neon for aggregate activity counts
+      → Resend → louis@… (+ optional support@round-table.co.uk)
+```
+
+| Piece | Detail |
+|-------|--------|
+| Schedule | `vercel.json` cron, e.g. `0 8 * * 1` (08:00 UTC ≈ 09:00 BST) — tune once |
+| Auth | `CRON_SECRET` env on Vercel; reject unauthenticated calls |
+| Analytics token | Vercel token with Web Analytics read + `projectId` / `teamId` as env |
+| Email | Existing **Resend** account (same stack as magic links) |
+| Privacy | Counts only; never log or email note bodies |
+
+### Phases
+
+| Phase | Who | What |
+|-------|-----|------|
+| **A — now** | Inkar | §0 Git, §1–3 monitoring, §4 **paste UTM link into Mailchimp** |
+| **B — next eng** | Louis / agent | Implement cron route + Resend template + env vars; send a test digest once |
+| **C — optional** | Eng | Custom `track()` events (e.g. `sign_in_success`) if Neon counts aren’t enough; Mailchimp Marketing API for click totals in the same email |
+
+### Env vars for Phase B (document when building — do not invent values yet)
+
+| Name | Purpose |
+|------|---------|
+| `CRON_SECRET` | Protect the cron route |
+| `VERCEL_TOKEN` | Web Analytics API |
+| `VERCEL_TEAM_ID` / `VERCEL_PROJECT_ID` | Scope the query |
+| `RESEND_API_KEY` | Already used for auth email |
+| `WEEKLY_DIGEST_TO` | Comma-separated recipients |
+
+Until Phase B ships: use Mailchimp Reports + Vercel Analytics UI manually each week.
+
+---
+
+## 6. Done checklist
+
+### Inkar (this week)
 
 - [ ] Vercel Git connected to **`Roundtable-Design/slj`**; production deploy succeeds  
 - [ ] Sentry project `slj` + DSN on Vercel Production  
@@ -138,10 +179,13 @@ Also confirm the campaign **From** is `info@talksfromthewarehouse.co.uk` (see [`
 - [ ] Better Stack monitors for `/api/health` + homepage  
 - [ ] Louis receives a test downtime / alert on his phone  
 - [ ] Web Analytics enabled on the Vercel project  
-- [ ] Mailchimp SLJ CTAs updated with **UTM** query params  
-- [ ] Louis knows: weekly story = Mailchimp reports + Vercel path views (not an auto email funnel yet)
+- [ ] Mailchimp SLJ CTAs use the **UTM tracking URL** from §4  
 
-Ping Louis when the checklist is green.
+### Engineering (Phase B — after Inkar)
+
+- [ ] Weekly digest cron + Resend email live; Louis receives a test Monday (or forced) run  
+
+Ping Louis when Inkar’s checklist is green.
 
 ---
 
