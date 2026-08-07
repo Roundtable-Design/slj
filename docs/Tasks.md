@@ -122,7 +122,7 @@
 - [ ] CI (GitHub Actions): lint/typecheck/test
 - [ ] RLS policy tests with Supabase tools/emulator
 - [x] Basic analytics/reporting dashboard (optional) — Vercel Web Analytics + Better Stack/Sentry: see [`docs/Monitoring.md`](./Monitoring.md) (Inkar setup Aug 2026)
-- [ ] Weekly usage digest email (Vercel Cron + Web Analytics API + Neon aggregates + Resend) — plan in [`docs/Monitoring-Setup-Brief-Inkar.md`](./Monitoring-Setup-Brief-Inkar.md) §5
+- [ ] Weekly usage digest email (Vercel Cron + Web Analytics API + Neon aggregates + Resend) — **awaiting Louis approval:** [`docs/plans/Weekly-Digest-Phase-B.md`](./plans/Weekly-Digest-Phase-B.md)
 
 ## James Jul 2026 sign-off (15 Jul call)
 

@@ -40,7 +40,8 @@
 - **Mailchimp CTA** = SLJ URL with UTMs (Vercel’s “referral” equivalent — no separate Vercel short link).
 - **Monday digest** = Vercel Cron → `/api/cron/weekly-digest` → Web Analytics API + Neon aggregates → **Resend** email (counts only; never note text).
 
-Full plan + copy-paste Mailchimp URL: [`Monitoring-Setup-Brief-Inkar.md`](./Monitoring-Setup-Brief-Inkar.md) §4–5.
+**Status:** [`plans/Weekly-Digest-Phase-B.md`](./plans/Weekly-Digest-Phase-B.md) — **awaiting Louis approval** (do not implement until approved).  
+Mailchimp URL + Inkar context: [`Monitoring-Setup-Brief-Inkar.md`](./Monitoring-Setup-Brief-Inkar.md) §4–5.
 
 Until that cron ships: Mailchimp Reports + Vercel Analytics UI manually.
 

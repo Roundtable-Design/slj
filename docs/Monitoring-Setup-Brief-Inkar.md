@@ -111,9 +111,12 @@ Rules:
 
 ## 5. Planned system: weekly usage email (engineering)
 
+**Status:** Plan written — **awaiting Louis approval** before implement.  
+**Full plan:** [`plans/Weekly-Digest-Phase-B.md`](./plans/Weekly-Digest-Phase-B.md)
+
 **Goal:** Every Monday morning (UK), email Louis (and optional Roundtable recipients) a short digest — not a dashboard login.
 
-Vercel Analytics alone cannot send that email. We build a small **cron + Resend** job that pulls numbers and emails them. Inkar’s job for this section is mostly §4 (UTM link) + enabling Analytics; Louis/agent builds the job next.
+Vercel Analytics alone cannot send that email. We build a small **cron + Resend** job that pulls numbers and emails them. Inkar’s job for this section is mostly §4 (UTM link) + enabling Analytics; Louis/agent builds the job **after approval**.
 
 ### What the Monday email will include
 
@@ -183,9 +186,10 @@ Until Phase B ships: use Mailchimp Reports + Vercel Analytics UI manually each w
 
 ### Engineering (Phase B — after Inkar)
 
+- [ ] Louis approves [`plans/Weekly-Digest-Phase-B.md`](./plans/Weekly-Digest-Phase-B.md)  
 - [ ] Weekly digest cron + Resend email live; Louis receives a test Monday (or forced) run  
 
-Inkar’s checklist is green (Aug 2026). Phase B remains for Louis / eng.
+Inkar’s checklist is green (Aug 2026). Phase B plan is written; **await Louis approval** before build.
 
 ---
 
