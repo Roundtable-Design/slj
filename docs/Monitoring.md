@@ -9,12 +9,12 @@
 
 | Layer | Tool | Why (agent-friendly) | Cookies? |
 |-------|------|----------------------|----------|
-| **Uptime + phone push** | [Better Stack](https://betterstack.com/) Uptime | Full REST API to create monitors & get statuses; mobile app for push | N/A (server-side) |
+| **Uptime** | [Better Stack](https://betterstack.com/) Uptime (free) | REST API monitors; email + Slack on free | N/A |
+| **Critical phone alerts** | [Pushover](https://pushover.net/) | iOS Critical Alerts / emergency priority; Better Stack webhook → `/api/webhooks/betterstack` → Pushover | N/A |
 | **App errors** | [Sentry](https://sentry.io/) | Cursor **Sentry MCP** + `@sentry/nextjs` + auth token API; optional uptime monitors later | Server SDK: no visitor cookies. Skip Session Replay for V1 |
 | **Page analytics** | [Vercel Web Analytics](https://vercel.com/docs/analytics) | Enable via `@vercel/analytics` in code + Vercel project (CLI); privacy-friendly pageviews | **No cookie banner** for Web Analytics (no advertising cookies) |
-| **Backup phone ping** | OpenClaw Telegram (existing) | Optional: Better Stack webhook → Telegram, or Mini cron curl → Telegram | N/A |
 
-**Not chosen:** Plausible Sites API (enterprise-gated provisioning), GA4/PostHog default (cookies → consent UI), OpenClaw-only uptime (Mini/home net can die silently).
+**Not chosen:** Better Stack paid iOS app ($29/responder) when Pushover (~$5 once) covers Critical Alerts; Plausible Sites API; GA4/PostHog default (cookies → consent UI); OpenClaw-only uptime (Mini can die silently).
 
 ---
 
@@ -27,11 +27,19 @@
 
 ---
 
-## Phone alerts (priority)
+## Phone alerts (Critical Alerts via Pushover)
 
-1. Install **Better Stack** mobile app; sign in with the same account as the API token.
-2. Monitors created via API with `email: true` (and push via app once logged in).
-3. Optional: Better Stack → webhook → OpenClaw/Telegram for a second loud channel (same pattern as email-router priority).
+Better Stack **free** includes email + Slack only (not their iOS app push). For alerts that cut through Focus/Silent:
+
+1. Install **Pushover** on iPhone; enable **Critical Alerts** in iOS Settings → Pushover.
+2. Create a Pushover application; set on Vercel Production:
+   - `PUSHOVER_API_TOKEN`
+   - `PUSHOVER_USER_KEY`
+   - `BETTER_STACK_WEBHOOK_SECRET` (random string)
+3. Better Stack outgoing webhook →  
+   `https://slj.talksfromthewarehouse.co.uk/api/webhooks/betterstack?secret=…`  
+   (`incident_change`, started + resolved). Route sends **emergency** Pushover on down, normal on recovery.
+4. Slack `#alarms` can stay as a quiet log.
 
 ## Weekly usage email — plan
 
@@ -53,6 +61,9 @@ Paste into Cursor secrets / shell (never commit):
 | Env | Where to get |
 |-----|----------------|
 | `BETTER_STACK_UPTIME_API_TOKEN` | Better Stack → Settings → API tokens |
+| `PUSHOVER_API_TOKEN` | Pushover → your application (e.g. Roundtable Uptime) |
+| `PUSHOVER_USER_KEY` | Pushover dashboard user key |
+| `BETTER_STACK_WEBHOOK_SECRET` | Random secret protecting `/api/webhooks/betterstack` |
 | `SENTRY_AUTH_TOKEN` | Sentry → Settings → Auth Tokens (`project:write`, `org:read`) |
 | `NEXT_PUBLIC_SENTRY_DSN` | Sentry project client DSN (after project create) |
 | `SENTRY_ORG` / `SENTRY_PROJECT` | e.g. org slug + `slj` |
