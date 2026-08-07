@@ -199,9 +199,25 @@ export function formatWeeklyDigestEmail(data: WeeklyDigestData): {
   const a = data.analytics;
   const subject = `SLJ weekly digest — ${data.accountsNewThisWeek.length} new account(s), ${data.accountsTotal} total`;
 
+  const analyticsBlock = a?.error
+    ? `Unavailable: ${a.error}`
+    : [
+        `Pageviews: ${a?.pageviews ?? "—"}`,
+        `Visitors: ${a?.visitors ?? "—"}`,
+        `Sign-in page views: ${a?.signInPageviews ?? "—"}`,
+        `Mailchimp UTM landings: ${a?.mailchimpLandings ?? "—"}`,
+      ].join("\n");
+
   const text = [
     `Simplicity Love & Justice — weekly digest`,
     `Period: ${fmt(data.weekStartIso)} → ${fmt(data.weekEndIso)} (Europe/London)`,
+    ``,
+    `## Vercel Analytics`,
+    analyticsBlock,
+    ``,
+    `## Activity (Neon)`,
+    `Notes created this week: ${data.notesCountWeek}`,
+    `Section completions this week: ${data.progressCompletionsWeek}`,
     ``,
     `## Accounts`,
     `Total (excl. test): ${data.accountsTotal}`,
@@ -211,20 +227,6 @@ export function formatWeeklyDigestEmail(data: WeeklyDigestData): {
     ``,
     `All accounts:`,
     allLines,
-    ``,
-    `## Activity (Neon)`,
-    `Notes created this week: ${data.notesCountWeek}`,
-    `Section completions this week: ${data.progressCompletionsWeek}`,
-    ``,
-    `## Vercel Analytics`,
-    a?.error
-      ? `Unavailable: ${a.error}`
-      : [
-          `Pageviews: ${a?.pageviews ?? "—"}`,
-          `Visitors: ${a?.visitors ?? "—"}`,
-          `Sign-in page views: ${a?.signInPageviews ?? "—"}`,
-          `Mailchimp UTM landings: ${a?.mailchimpLandings ?? "—"}`,
-        ].join("\n"),
     ``,
     `Joined dates use Auth.js emailVerified (first successful magic link).`,
   ].join("\n");
