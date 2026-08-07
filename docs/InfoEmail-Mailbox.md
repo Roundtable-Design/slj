@@ -130,6 +130,6 @@ Until `k1` is live, campaigns may send but are more likely to fail auth / land i
 ## Message you can send Inkar
 
 > Here’s the handoff for TFW `info@` mail (receive path, Cloudways/Rackspace, Mailchimp From auth):  
-> https://github.com/louisreid/slj/blob/main/docs/InfoEmail-Mailbox.md  
+> https://github.com/Roundtable-Design/slj/blob/main/docs/InfoEmail-Mailbox.md  
 >  
 > Short version: `info@` is an alias to `devotional@`, which forwards to `support@round-table.co.uk`. Turn on “save copies” if James should see mail in Apple Mail. For Mailchimp From `info@`, finish domain auth — DKIM `k1` is still missing.

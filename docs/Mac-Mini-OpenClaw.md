@@ -7,7 +7,7 @@ Cursor on the Mac Mini can work on this repo when it is registered in OpenClaw.
 ```bash
 mkdir -p ~/Projects
 cd ~/Projects
-git clone https://github.com/louisreid/slj.git
+git clone https://github.com/Roundtable-Design/slj.git
 cd slj && pnpm i
 ```
 

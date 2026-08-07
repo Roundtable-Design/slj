@@ -6,7 +6,7 @@ Deployment-only steps: Git push, Vercel, Supabase Auth, DNS, smoke tests. No fea
 
 ## Done via CLI (already run)
 
-- **Git:** Repo created at https://github.com/louisreid/slj and pushed.
+- **Git:** Repo at https://github.com/Roundtable-Design/slj (moved from `louisreid/slj`).
 - **Vercel:** Project linked (`roundtable-supports-projects/slj`), domain `slj.talksfromthewarehouse.co.uk` added, production deploy completed. Production URL: https://slj-mu.vercel.app (custom domain works after DNS below).
 - **Supabase:** Project **slj** created (ref `mlbmjrgykjjwhellmtpz`), linked, migrations pushed, Vercel env vars set, production redeployed. Dashboard: https://supabase.com/dashboard/project/mlbmjrgykjjwhellmtpz
 
