@@ -143,16 +143,18 @@
 
   .slj-reader-blocks p {
     text-align: justify;
+    /* Prefer wrapping long tokens (URLs) over leaving a sparse justified line */
+    overflow-wrap: anywhere;
   }
 
   /*
-   * Let long URLs/links break mid-string so justify doesn’t stretch a short
-   * line of words left behind an unbreakable link (e.g. Preface names ahead
-   * of www.cactusfoodandfaith.com).
+   * Long link labels (www…) must break mid-string. overflow-wrap alone is not
+   * enough: browsers still prefer wrapping at spaces, which leaves names like
+   * “Will and Pip Campbell-Clause” stretched before an unbroken URL.
    */
   .slj-reader-blocks a {
     overflow-wrap: anywhere;
-    word-break: break-word;
+    word-break: break-all;
   }
 
   /*

@@ -165,6 +165,32 @@ function renderInlineMarkdown(text: string): ReactNode {
   let last = 0;
   let m: RegExpExecArray | null;
   let key = 0;
+
+  /** Soft wrap opportunities in URL-like link labels (for justified paragraphs). */
+  const breakableLabel = (label: string, keyBase: number): ReactNode => {
+    const looksLikeUrl =
+      /^(https?:\/\/|www\.)/i.test(label) ||
+      (/[./]/.test(label) && !/\s/.test(label) && label.length >= 18);
+    if (!looksLikeUrl) return label;
+    const parts: React.ReactNode[] = [];
+    let buf = "";
+    const flush = () => {
+      if (!buf) return;
+      parts.push(buf);
+      buf = "";
+    };
+    for (let i = 0; i < label.length; i++) {
+      const ch = label[i]!;
+      buf += ch;
+      if ("/._?-&=:#".includes(ch) && i < label.length - 1) {
+        flush();
+        parts.push(<wbr key={`wbr-${keyBase}-${i}`} />);
+      }
+    }
+    flush();
+    return parts.length <= 1 ? label : <Fragment>{parts}</Fragment>;
+  };
+
   while ((m = re.exec(text)) !== null) {
     if (m.index > last) {
       const segment = text.slice(last, m.index);
@@ -173,13 +199,14 @@ function renderInlineMarkdown(text: string): ReactNode {
       key = footnoted.nextKey;
     }
     if (m[1] != null && m[2] != null) {
+      const labelKey = key++;
       out.push(
         <Link
-          key={`md-${key++}`}
+          key={`md-${labelKey}`}
           href={m[2]}
-          className="underline decoration-1 underline-offset-[0.15em] hover:text-[var(--slj-text-muted)]"
+          className="break-all underline decoration-1 underline-offset-[0.15em] hover:text-[var(--slj-text-muted)]"
         >
-          {m[1]}
+          {breakableLabel(m[1], labelKey)}
         </Link>
       );
     } else {
