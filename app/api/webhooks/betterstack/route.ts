@@ -33,6 +33,7 @@ function isDownEvent(event: string | undefined, resolvedAt: string | null | unde
 async function sendPushover(opts: {
   title: string;
   message: string;
+  /** 0 normal · 1 high (one Critical Alert if enabled) · 2 emergency (retries — avoid by default) */
   priority: 0 | 1 | 2;
 }) {
   const token = process.env.PUSHOVER_API_TOKEN?.trim();
@@ -47,11 +48,15 @@ async function sendPushover(opts: {
   body.set("title", opts.title.slice(0, 250));
   body.set("message", opts.message.slice(0, 1024));
   body.set("priority", String(opts.priority));
+  // Tag so we can cancel emergencies via API if needed.
+  body.set("tags", "slj-uptime");
   if (opts.priority === 2) {
-    // Emergency: repeats until ack; maps to iOS Critical Alerts when enabled.
-    body.set("retry", "30");
-    body.set("expire", "600");
+    // Emergency retries until ack — only when explicitly enabled.
+    body.set("retry", "60");
+    body.set("expire", "180");
     body.set("sound", "siren");
+  } else if (opts.priority === 1) {
+    body.set("sound", "persistent");
   }
 
   const res = await fetch("https://api.pushover.net/1/messages.json", {
@@ -62,6 +67,7 @@ async function sendPushover(opts: {
   const json = (await res.json().catch(() => ({}))) as {
     status?: number;
     errors?: string[];
+    receipt?: string;
   };
   if (!res.ok || json.status !== 1) {
     return {
@@ -69,7 +75,7 @@ async function sendPushover(opts: {
       error: json.errors?.join(", ") || `pushover_http_${res.status}`,
     };
   }
-  return { ok: true as const };
+  return { ok: true as const, receipt: json.receipt };
 }
 
 /**
@@ -116,10 +122,13 @@ export async function POST(req: NextRequest) {
     payload.data?.id ? `Incident: ${payload.data.id}` : null,
   ].filter(Boolean);
 
+  // Priority 1 = high / Critical Alert capable, but does NOT retry forever.
+  // Set PUSHOVER_EMERGENCY=1 for priority 2 (retries until acknowledged).
+  const emergency = process.env.PUSHOVER_EMERGENCY === "1";
   const result = await sendPushover({
     title,
     message: lines.join("\n"),
-    priority: down ? 2 : 0,
+    priority: down ? (emergency ? 2 : 1) : 0,
   });
 
   if (!result.ok) {
@@ -129,5 +138,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ ok: true, down, event: event ?? null });
+  return NextResponse.json({
+    ok: true,
+    down,
+    event: event ?? null,
+    priority: down ? (emergency ? 2 : 1) : 0,
+  });
 }
