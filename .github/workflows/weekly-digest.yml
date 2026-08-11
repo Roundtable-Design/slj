@@ -9,6 +9,11 @@ on:
     # Monday 08:00 UTC (≈ 09:00 UK summer time)
     - cron: "0 8 * * 1"
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview only (do not send email)"
+        type: boolean
+        default: false
 
 jobs:
   send:
@@ -25,10 +30,13 @@ jobs:
             exit 1
           fi
 
-          # Manual runs may be mid-week — force past the Monday-only gate.
           extra=""
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Manual runs may be mid-week — force past the Monday-only gate.
             extra="&force=1"
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
+              extra="${extra}&dryRun=1"
+            fi
           fi
 
           url="https://slj.talksfromthewarehouse.co.uk/api/cron/weekly-digest?secret=${CRON_SECRET}${extra}"
