@@ -34,6 +34,19 @@ export async function GET(req: NextRequest) {
   }
 
   const dryRun = req.nextUrl.searchParams.get("dryRun") === "1";
+  const force = req.nextUrl.searchParams.get("force") === "1";
+
+  // Hobby plan registers daily crons reliably; only send mail on Mondays (UTC)
+  // unless ?force=1 (manual catch-up). Cron schedule is `0 8 * * *`.
+  const weekdayUtc = new Date().getUTCDay(); // 0=Sun … 1=Mon
+  if (!force && !dryRun && weekdayUtc !== 1) {
+    return NextResponse.json({
+      ok: true,
+      skipped: true,
+      reason: "not_monday_utc",
+      weekdayUtc,
+    });
+  }
 
   try {
     const data = await gatherWeeklyDigestData();

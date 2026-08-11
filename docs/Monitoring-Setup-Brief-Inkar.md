@@ -141,7 +141,7 @@ Vercel Cron (Mon ~09:00 Europe/London)
 
 | Piece | Detail |
 |-------|--------|
-| Schedule | `vercel.json` cron, e.g. `0 8 * * 1` (08:00 UTC ≈ 09:00 BST) — tune once |
+| Schedule | `vercel.json` cron `0 8 * * *` (08:00 UTC daily); handler only emails on Mondays UTC (≈ 09:00 BST) unless `?force=1` |
 | Auth | `CRON_SECRET` env on Vercel; reject unauthenticated calls |
 | Analytics token | Vercel token with Web Analytics read + `projectId` / `teamId` as env |
 | Email | Existing **Resend** account (same stack as magic links) |

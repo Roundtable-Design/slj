@@ -38,19 +38,20 @@ Better Stack **free** includes email + Slack only (not their iOS app push). For 
    - `BETTER_STACK_WEBHOOK_SECRET` (random string)
 3. Better Stack outgoing webhook →  
    `https://slj.talksfromthewarehouse.co.uk/api/webhooks/betterstack?secret=…`  
-   (`incident_change`, started + resolved). Route sends **high-priority** Pushover on down (Critical Alert capable, **no endless retries**), normal on recovery. Set `PUSHOVER_EMERGENCY=1` only if you want emergency priority (retries until you acknowledge).
+   (`incident_change`, started + resolved). Route behaviour:
+   - **SLJ monitors** (name/URL contains `slj`): high-priority Pushover on down (Critical Alert capable, **no endless retries**); normal on recovery. Set `PUSHOVER_EMERGENCY=1` only if you want emergency priority (retries until you acknowledge).
+   - **All other monitors**: still sent to Pushover, but **quiet** (priority −1 — notification, no sound/vibration).
 4. Slack `#alarms` can stay as a quiet log.
+
+**Confirmation periods (reduces flap noise):** non-SLJ monitors use **300s** before an incident opens; SLJ stays at **60s** for faster course-app detection.
 
 ## Weekly usage email — plan
 
 **Vercel Web Analytics does not send a built-in weekly email.** Planned system (documented for Inkar + eng):
 
 - **Mailchimp CTA** = SLJ URL with UTMs (Vercel’s “referral” equivalent — no separate Vercel short link).
-- **Monday digest** = Vercel Cron → `/api/cron/weekly-digest` → Web Analytics API + Neon **account list** (emails for admin recipients) + activity counts → **Resend**.
-
-Full plan + Mailchimp URL: [`Monitoring-Setup-Brief-Inkar.md`](./Monitoring-Setup-Brief-Inkar.md) §4–5.
-
-Until that cron ships: Mailchimp Reports + Vercel Analytics UI manually.
+- **Monday digest** = **GitHub Action** (`.github/workflows/weekly-digest.yml`, Mondays `0 8 * * 1` UTC) → `/api/cron/weekly-digest` → Web Analytics API + Neon **account list** + activity → **Resend**.  
+  Vercel `vercel.json` also declares a daily cron (`0 8 * * *`; route emails Mondays only, or `?force=1`), but this project’s Vercel cron **definitions stayed empty**, so Actions is the reliable trigger. Requires repo secret `CRON_SECRET` (same value as Vercel). Manual: Actions → Weekly digest → Run workflow.
 
 ---
 

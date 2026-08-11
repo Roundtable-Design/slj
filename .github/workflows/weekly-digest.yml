@@ -1,0 +1,40 @@
+# Reliable Monday digest trigger.
+# Vercel project cron registration is stuck empty on this Hobby project, so
+# GitHub Actions is the active scheduler. Keep vercel.json cron as a secondary
+# attempt; if both ever fire, disable one.
+name: Weekly digest
+
+on:
+  schedule:
+    # Monday 08:00 UTC (≈ 09:00 UK summer time)
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call production digest endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CRON_SECRET}" ]; then
+            echo "CRON_SECRET repo secret is not set" >&2
+            exit 1
+          fi
+
+          # Manual runs may be mid-week — force past the Monday-only gate.
+          extra=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            extra="&force=1"
+          fi
+
+          url="https://slj.talksfromthewarehouse.co.uk/api/cron/weekly-digest?secret=${CRON_SECRET}${extra}"
+          code="$(curl -sS -o /tmp/digest.json -w '%{http_code}' "$url")"
+          echo "HTTP ${code}"
+          cat /tmp/digest.json
+          echo
+          test "${code}" = "200"
+          python3 -c 'import json,sys; d=json.load(open("/tmp/digest.json")); sys.exit(0 if d.get("ok") else 1)'
