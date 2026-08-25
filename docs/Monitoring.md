@@ -50,8 +50,9 @@ Better Stack **free** includes email + Slack only (not their iOS app push). For 
 **Vercel Web Analytics does not send a built-in weekly email.** Planned system (documented for Inkar + eng):
 
 - **Mailchimp CTA** = SLJ URL with UTMs (Vercel’s “referral” equivalent — no separate Vercel short link).
-- **Monday digest** = **GitHub Action** (`.github/workflows/weekly-digest.yml`, Mondays `0 8 * * 1` UTC) → `/api/cron/weekly-digest` → Web Analytics API + Neon **account list** + activity → **Resend**.  
+- **Monday digest** = **GitHub Action** (`.github/workflows/weekly-digest.yml`, Mondays `0 8 * * 1` UTC) → `/api/cron/weekly-digest` → Web Analytics API + Neon **account list** + activity → **Resend**.
   Vercel `vercel.json` also declares a daily cron (`0 8 * * *`; route emails Mondays only, or `?force=1`), but this project’s Vercel cron **definitions stayed empty**, so Actions is the reliable trigger. Requires repo secret `CRON_SECRET` (same value as Vercel). Manual: Actions → Weekly digest → Run workflow.
+- **Analytics token:** Production env `VERCEL_ANALYTICS_TOKEN` must be a **dashboard** token from [vercel.com/account/tokens](https://vercel.com/account/tokens) (scopes: read Web Analytics for team `roundtable-supports-projects`). Do **not** use a CLI/`vercel login` session token — those expire after ~10 days idle and surface as `invalidToken` in the digest.
 
 ---
 

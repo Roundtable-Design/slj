@@ -40,8 +40,32 @@ function weekWindow(now = new Date()) {
   return { weekStart, weekEnd };
 }
 
+function analyticsApiToken(): string | undefined {
+  // Prefer a dedicated name — `VERCEL_TOKEN` is also the CLI auth env and
+  // login/session tokens expire after ~10 days of inactivity.
+  return (
+    process.env.VERCEL_ANALYTICS_TOKEN?.trim() ||
+    process.env.SLJ_VERCEL_API_TOKEN?.trim() ||
+    process.env.VERCEL_TOKEN?.trim() ||
+    undefined
+  );
+}
+
+function formatAnalyticsHttpError(status: number, body: string): string {
+  const snippet = body.slice(0, 200);
+  if (status === 403 && /invalidToken|Not authorized/i.test(body)) {
+    return (
+      `analytics ${status}: invalid/expired API token. ` +
+      `Rotate Production env VERCEL_ANALYTICS_TOKEN ` +
+      `(create at vercel.com/account/tokens; do not use a CLI login token). ` +
+      `Raw: ${snippet}`
+    );
+  }
+  return `analytics ${status}: ${snippet}`;
+}
+
 async function fetchAnalytics(since: Date, until: Date) {
-  const token = process.env.VERCEL_TOKEN?.trim();
+  const token = analyticsApiToken();
   const projectId =
     process.env.VERCEL_PROJECT_ID?.trim() ||
     process.env.VERCEL_PROJECT_ID_SLJ?.trim() ||
@@ -50,7 +74,13 @@ async function fetchAnalytics(since: Date, until: Date) {
     process.env.VERCEL_TEAM_ID?.trim() || "team_F3yCY7NEWjHAaPkzyAGiQ4W2";
 
   if (!token) {
-    return { pageviews: null, visitors: null, signInPageviews: null, mailchimpLandings: null, error: "VERCEL_TOKEN unset" };
+    return {
+      pageviews: null,
+      visitors: null,
+      signInPageviews: null,
+      mailchimpLandings: null,
+      error: "VERCEL_ANALYTICS_TOKEN unset",
+    };
   }
 
   async function count(filter?: string) {
@@ -66,7 +96,7 @@ async function fetchAnalytics(since: Date, until: Date) {
       { headers: { Authorization: `Bearer ${token}` } }
     );
     if (!res.ok) {
-      throw new Error(`analytics ${res.status}: ${(await res.text()).slice(0, 200)}`);
+      throw new Error(formatAnalyticsHttpError(res.status, await res.text()));
     }
     const json = (await res.json()) as {
       data?: { pageviews?: number; visitors?: number };

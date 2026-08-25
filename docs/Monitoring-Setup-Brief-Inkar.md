@@ -160,7 +160,7 @@ Vercel Cron (Mon ~09:00 Europe/London)
 | Name | Purpose |
 |------|---------|
 | `CRON_SECRET` | Protect the cron route |
-| `VERCEL_TOKEN` | Web Analytics API |
+| `VERCEL_ANALYTICS_TOKEN` | Web Analytics API (dashboard token; not CLI login) |
 | `VERCEL_TEAM_ID` / `VERCEL_PROJECT_ID` | Scope the query |
 | `RESEND_API_KEY` | Already used for auth email |
 | `WEEKLY_DIGEST_TO` | Comma-separated recipients |
