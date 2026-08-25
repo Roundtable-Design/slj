@@ -62,7 +62,8 @@ Ask Louis for access, or have him create an **API token** and share it securely 
    ```
 
    That creates/updates:
-   - **SLJ production health** → `https://slj.talksfromthewarehouse.co.uk/api/health` (every 60s)
+   - **SLJ production homepage** → `https://slj.talksfromthewarehouse.co.uk/` (every 180s)
+   - **SLJ production database** → `https://slj.talksfromthewarehouse.co.uk/api/health/db` (every 600s — do not use 60s; keeps Neon awake)
    - **SLJ production homepage** → `https://slj.talksfromthewarehouse.co.uk/` (every 180s)
 
 5. Confirm both monitors are **Up** in the Better Stack UI.

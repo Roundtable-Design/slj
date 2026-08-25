@@ -108,15 +108,29 @@ async function main() {
   console.log(`Found ${existing.length} existing monitor(s).`);
 
   await ensureMonitor(token, existing, {
-    name: "SLJ production health",
-    url: `${PROD}/api/health`,
-    check_frequency: 60,
-  });
-  await ensureMonitor(token, existing, {
     name: "SLJ production homepage",
     url: `${PROD}/`,
     check_frequency: 180,
   });
+  // DB probe — low frequency so Neon can scale to zero between checks.
+  await ensureMonitor(token, existing, {
+    name: "SLJ production database",
+    url: `${PROD}/api/health/db`,
+    check_frequency: 600,
+  });
+
+  // Retire legacy monitor that pinged /api/health every 60s (kept Neon awake 24/7).
+  const legacy = existing.find(
+    (m) => m.attributes.pronounceable_name === "SLJ production health"
+  );
+  if (legacy) {
+    const { ok, status } = await api(token, "DELETE", `/monitors/${legacy.id}`);
+    console.log(
+      ok
+        ? `Removed legacy monitor "SLJ production health" (${legacy.id})`
+        : `Failed remove legacy monitor HTTP ${status}`
+    );
+  }
 
   console.log("Done. Install the Better Stack mobile app for push alerts.");
 }

@@ -78,15 +78,15 @@ Also: **authenticate Sentry MCP** in Cursor (MCP auth) so agents can inspect iss
 
 ## Health check (in this repo)
 
-`GET /api/health` — public, no auth.
-
-- `200` `{ ok: true, db: "up" }` when Neon responds  
-- `503` if DB unreachable  
+- `GET /api/health` — app liveness only (no Neon ping). Safe for frequent uptime checks.
+- `GET /api/health/db` — Neon `SELECT 1`. **Monitor at low frequency only** (e.g. every 10 min).
 
 Better Stack should monitor:
 
-1. `https://slj.talksfromthewarehouse.co.uk/api/health` (every 60–180s)  
-2. Optional: `https://slj.talksfromthewarehouse.co.uk/` (status only)
+1. `https://slj.talksfromthewarehouse.co.uk/` (every 180s) — app reachable  
+2. `https://slj.talksfromthewarehouse.co.uk/api/health/db` (every 600s) — database up  
+
+Do **not** point a 60s monitor at any URL that queries Neon; it prevents scale-to-zero and burns CU-hours on Free/Launch.
 
 ---
 
