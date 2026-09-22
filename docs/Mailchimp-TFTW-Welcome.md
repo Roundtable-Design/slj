@@ -42,3 +42,14 @@ Code: [`lib/mailchimp.ts`](../lib/mailchimp.ts), [`lib/course-onboarding.ts`](..
 2. Subscribe a throwaway via the TFTW site form → expect Draft A welcome From `info@…`.
 3. Sign up a new course account (fresh email) → expect Mailchimp add + Draft B Resend; second sign-in should not re-send.
 4. Confirm an `@example.com` e2e user does not hit Mailchimp.
+
+
+## Website welcome via webhook (live path)
+
+Mailchimp list webhook on **subscribe** (user + admin sources; API excluded) posts to:
+
+`https://slj.talksfromthewarehouse.co.uk/api/webhooks/mailchimp?secret=…`
+
+which sends the TFTW welcome (Draft A) via Resend From `info@…`.
+
+Leave the Customer Journey **Welcome new contacts** in **draft** to avoid duplicate welcomes, or delete it.

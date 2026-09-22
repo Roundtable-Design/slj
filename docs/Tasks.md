@@ -146,7 +146,7 @@ Access model decided: **open link from Talks from the Warehouse**. Full plan: [p
 - [ ] Confirm who receives `info@` (see [`docs/InfoEmail-Mailbox.md`](./InfoEmail-Mailbox.md)); Louis + James can read print requests
 - [x] Course auth email From `info@…` via Resend / Auth.js ([`docs/AuthEmailBranding.md`](./AuthEmailBranding.md))
 - [x] Mailchimp audience default From → `info@talksfromthewarehouse.co.uk` (DKIM `k1` still outstanding — [`InfoEmail-Mailbox.md`](./InfoEmail-Mailbox.md))
-- [x] TFTW website welcome journey copy updated (Automations → **Welcome new contacts** — **Start Journey** still required in Mailchimp UI; draft was updated via API)
+- [x] TFTW website welcome via Mailchimp subscribe webhook → Resend (journey left draft to avoid dupes; see [`Mailchimp-TFTW-Welcome.md`](./Mailchimp-TFTW-Welcome.md))
 - [x] SLJ sign-in → Mailchimp auto-subscribe + one-time course welcome (Resend From `info@…`) — `lib/mailchimp.ts`, `lib/course-onboarding.ts`
 - [ ] MailChimp announcement to subscriber list (James copy)
 - [ ] After ~6 months: remove TFW toast only; keep header menu (TARS reminder due 2027-02-04)
