@@ -164,7 +164,7 @@ Vercel Cron (Mon ~09:00 Europe/London)
 | `VERCEL_ANALYTICS_TOKEN` | Web Analytics API (dashboard token; not CLI login) |
 | `VERCEL_TEAM_ID` / `VERCEL_PROJECT_ID` | Scope the query |
 | `RESEND_API_KEY` | Already used for auth email |
-| `WEEKLY_DIGEST_TO` | Comma-separated recipients |
+| `WEEKLY_DIGEST_TO` | Comma-separated recipients (default: Louis + James `theodgersfamily@aol.com`) |
 
 Until Phase B ships: use Mailchimp Reports + Vercel Analytics UI manually each week.
 

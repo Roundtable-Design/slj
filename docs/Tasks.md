@@ -122,7 +122,7 @@
 - [ ] CI (GitHub Actions): lint/typecheck/test
 - [ ] RLS policy tests with Supabase tools/emulator
 - [x] Basic analytics/reporting dashboard (optional) — Vercel Web Analytics + Better Stack/Sentry: see [`docs/Monitoring.md`](./Monitoring.md) (Inkar setup Aug 2026)
-- [x] Weekly usage digest email (Vercel Cron + Web Analytics API + Neon accounts list + Resend) — `/api/cron/weekly-digest`; see [`docs/Monitoring.md`](./Monitoring.md)
+- [x] Weekly usage digest email (GitHub Action + `/api/cron/weekly-digest` + Resend) — recipients Louis + James; analytics via `VERCEL_ANALYTICS_TOKEN`; see [`docs/Monitoring.md`](./Monitoring.md)
 
 ## James Jul 2026 sign-off (15 Jul call)
 
@@ -145,9 +145,15 @@ Access model decided: **open link from Talks from the Warehouse**. Full plan: [p
 - [x] SLJ login + landing: print version available + mailto `info@talksfromthewarehouse.co.uk`
 - [ ] Confirm who receives `info@` (see [`docs/InfoEmail-Mailbox.md`](./InfoEmail-Mailbox.md)); Louis + James can read print requests
 - [x] Course auth email From `info@…` via Resend / Auth.js ([`docs/AuthEmailBranding.md`](./AuthEmailBranding.md))
-- [ ] Mailchimp From `info@`: finish DKIM (`k1` missing) — handoff in InfoEmail-Mailbox.md
+- [x] Mailchimp audience default From → `info@talksfromthewarehouse.co.uk` (DKIM `k1` still outstanding — [`InfoEmail-Mailbox.md`](./InfoEmail-Mailbox.md))
+- [x] TFTW website welcome journey copy updated (Automations → **Welcome new contacts** — **Start Journey** still required in Mailchimp UI; draft was updated via API)
+- [x] SLJ sign-in → Mailchimp auto-subscribe + one-time course welcome (Resend From `info@…`) — `lib/mailchimp.ts`, `lib/course-onboarding.ts`
 - [ ] MailChimp announcement to subscriber list (James copy)
 - [ ] After ~6 months: remove TFW toast only; keep header menu (TARS reminder due 2027-02-04)
+
+## Ops / receivables
+
+- [ ] **Reclaim SLJ Neon Launch cost from James Odgers** — Roundtable paid Neon **Launch** (~25 Aug 2026) after free-tier compute quota exhausted and production DB went down; invoice or agree split with James for ongoing SLJ hosting · see TARS [CFO-TODOS](https://github.com/louisreid/tars/blob/main/data/memory/business/CFO-TODOS.md)
 
 See [plans/James-Signoff-And-Maturity-Plan.md](plans/James-Signoff-And-Maturity-Plan.md) Part 3.
 

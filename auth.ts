@@ -123,4 +123,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     verificationTokensTable: verificationTokens,
   }),
   providers: buildProviders(),
+  events: {
+    async signIn({ user }) {
+      const email = user.email;
+      if (!email) return;
+      // Dynamic import keeps the auth edge bundle smaller and isolates Mailchimp/Resend I/O.
+      const { onCourseSignInSideEffects } = await import(
+        "@/lib/course-onboarding"
+      );
+      await onCourseSignInSideEffects({
+        email,
+        name: user.name,
+      });
+    },
+  },
 });

@@ -14,7 +14,12 @@ export type WeeklyDigestData = {
   accountsNewThisWeek: DigestAccount[];
   accountsAll: DigestAccount[];
   notesCountWeek: number;
-  progressCompletionsWeek: number;
+  /** Distinct real users with any progress row updated this week. */
+  readersActiveWeek: number;
+  /** Progress rows touched this week (reading position updates). */
+  progressUpdatesWeek: number;
+  /** Chapter/session completions this week. */
+  chapterCompletionsWeek: number;
   analytics?: {
     pageviews: number | null;
     visitors: number | null;
@@ -170,15 +175,32 @@ export async function gatherWeeklyDigestData(
 
   const notes = await sql`
     SELECT COUNT(*)::int AS n
-    FROM notes
-    WHERE created_at >= ${weekStart.toISOString()}
+    FROM notes n
+    JOIN "user" u ON u.id = n.user_id
+    WHERE n.created_at >= ${weekStart.toISOString()}
+      AND u.email IS NOT NULL
+      AND u.email NOT LIKE '%@example.com'
   `;
 
   const progress = await sql`
+    SELECT
+      COUNT(*)::int AS updates,
+      COUNT(DISTINCT p.user_id)::int AS readers
+    FROM progress p
+    JOIN "user" u ON u.id = p.user_id
+    WHERE p.updated_at >= ${weekStart.toISOString()}
+      AND u.email IS NOT NULL
+      AND u.email NOT LIKE '%@example.com'
+  `;
+
+  const chapters = await sql`
     SELECT COUNT(*)::int AS n
-    FROM progress
-    WHERE completed_at IS NOT NULL
-      AND completed_at >= ${weekStart.toISOString()}
+    FROM chapter_progress cp
+    JOIN "user" u ON u.id = cp.user_id
+    WHERE cp.completed_at IS NOT NULL
+      AND cp.completed_at >= ${weekStart.toISOString()}
+      AND u.email IS NOT NULL
+      AND u.email NOT LIKE '%@example.com'
   `;
 
   const analytics = await fetchAnalytics(weekStart, weekEnd);
@@ -190,7 +212,9 @@ export async function gatherWeeklyDigestData(
     accountsNewThisWeek,
     accountsAll,
     notesCountWeek: notes[0]?.n ?? 0,
-    progressCompletionsWeek: progress[0]?.n ?? 0,
+    readersActiveWeek: progress[0]?.readers ?? 0,
+    progressUpdatesWeek: progress[0]?.updates ?? 0,
+    chapterCompletionsWeek: chapters[0]?.n ?? 0,
     analytics,
   };
 }
@@ -227,7 +251,7 @@ export function formatWeeklyDigestEmail(data: WeeklyDigestData): {
     .join("\n");
 
   const a = data.analytics;
-  const subject = `SLJ weekly digest — ${data.accountsNewThisWeek.length} new account(s), ${data.accountsTotal} total`;
+  const subject = `Simplicity Love & Justice — weekly digest (${data.accountsNewThisWeek.length} new, ${data.accountsTotal} total)`;
 
   const analyticsBlock = a?.error
     ? `Unavailable: ${a.error}`
@@ -246,8 +270,10 @@ export function formatWeeklyDigestEmail(data: WeeklyDigestData): {
     analyticsBlock,
     ``,
     `## Activity (Neon)`,
+    `Readers active this week: ${data.readersActiveWeek}`,
+    `Reading progress updates: ${data.progressUpdatesWeek}`,
+    `Sessions marked complete: ${data.chapterCompletionsWeek}`,
     `Notes created this week: ${data.notesCountWeek}`,
-    `Section completions this week: ${data.progressCompletionsWeek}`,
     ``,
     `## Accounts`,
     `Total (excl. test): ${data.accountsTotal}`,

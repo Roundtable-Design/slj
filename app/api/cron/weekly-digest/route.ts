@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
 
     const toRaw =
       process.env.WEEKLY_DIGEST_TO?.trim() ||
-      "louis@round-table.co.uk";
+      "louis@round-table.co.uk,theodgersfamily@aol.com";
     const to = toRaw.split(/[,;]/).map((s) => s.trim()).filter(Boolean);
     const apiKey =
       process.env.AUTH_RESEND_KEY?.trim() ||
