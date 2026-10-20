@@ -1,11 +1,12 @@
 import { createHash } from "crypto";
 
-const AUDIENCE_ID = process.env.MAILCHIMP_AUDIENCE_ID ?? "";
-const API_KEY = process.env.MAILCHIMP_API_KEY ?? "";
+/** Trim — Vercel env paste sometimes stores trailing newlines that break Basic auth. */
+const AUDIENCE_ID = (process.env.MAILCHIMP_AUDIENCE_ID ?? "").trim();
+const API_KEY = (process.env.MAILCHIMP_API_KEY ?? "").trim();
 
 /** Account + list unsubscribe (audience-wide). */
 export const TFTW_UNSUBSCRIBE_URL =
-  process.env.MAILCHIMP_UNSUBSCRIBE_URL ??
+  (process.env.MAILCHIMP_UNSUBSCRIBE_URL ?? "").trim() ||
   "https://talksfromthewarehouse.us21.list-manage.com/unsubscribe?u=1c8d690688ecca6278d4b78e4&id=d25a712438";
 
 type MemberStatus =
@@ -17,8 +18,26 @@ type MemberStatus =
   | "archived";
 
 export type EnsureTftwResult =
-  | { ok: true; outcome: "added" | "already_subscribed" | "updated" | "skipped" }
+  | {
+      ok: true;
+      outcome: "added" | "already_subscribed" | "skipped";
+    }
   | { ok: false; error: string };
+
+/** Pure decision for tests / audit — never force-resubscribe existing opt-outs. */
+export function decideTftwSubscribeAction(params: {
+  httpStatus: number;
+  memberStatus?: string | null;
+}): "already_subscribed" | "skipped" | "add_new" | "error" {
+  if (params.httpStatus === 404) return "add_new";
+  if (params.httpStatus < 200 || params.httpStatus >= 300) return "error";
+  const status = (params.memberStatus ?? "").toLowerCase();
+  if (status === "subscribed" || status === "pending") {
+    return "already_subscribed";
+  }
+  // unsubscribed / cleaned / archived / transactional / unknown — leave alone
+  return "skipped";
+}
 
 function datacenter(): string | null {
   if (!API_KEY.includes("-")) return null;
@@ -60,7 +79,11 @@ async function mcFetch(
 
 /**
  * Ensure email is on the TFTW audience. Idempotent; does not block callers on failure.
- * Skips if previously unsubscribed (cleaned/unsubscribed) so we respect opt-out.
+ *
+ * James (Oct 2026): do not auto-resubscribe anyone who previously opted out
+ * (unsubscribed / cleaned / archived). Only brand-new addresses (HTTP 404) are added.
+ * Never sends Mailchimp `status: "subscribed"` for an existing member — that field
+ * force-resubscribes opt-outs.
  */
 export async function ensureTftwSubscriber(params: {
   email: string;
@@ -77,18 +100,22 @@ export async function ensureTftwSubscriber(params: {
 
   const hash = subscriberHash(email);
   const existing = await mcFetch(`/lists/${AUDIENCE_ID}/members/${hash}`);
+  const memberStatus = (existing.json as { status?: MemberStatus })?.status;
+  const action = decideTftwSubscribeAction({
+    httpStatus: existing.status,
+    memberStatus,
+  });
 
-  if (existing.ok) {
-    const status = (existing.json as { status?: MemberStatus })?.status;
-    if (status === "subscribed" || status === "pending") {
-      return { ok: true, outcome: "already_subscribed" };
-    }
-    if (status === "unsubscribed" || status === "cleaned") {
-      return { ok: true, outcome: "skipped" };
-    }
-  } else if (existing.status !== 404) {
+  if (action === "already_subscribed") {
+    return { ok: true, outcome: "already_subscribed" };
+  }
+  if (action === "skipped") {
+    return { ok: true, outcome: "skipped" };
+  }
+  if (action === "error") {
     const detail =
-      (existing.json as { detail?: string })?.detail ?? `HTTP ${existing.status}`;
+      (existing.json as { detail?: string })?.detail ??
+      `HTTP ${existing.status}`;
     return { ok: false, error: detail };
   }
 
@@ -98,10 +125,12 @@ export async function ensureTftwSubscriber(params: {
   if (firstName) merge_fields.FNAME = firstName;
   if (lastName) merge_fields.LNAME = lastName;
 
+  // New contacts only: status_if_new applies when the address is absent.
+  // Do NOT set `status` — that would overwrite an existing opt-out if the
+  // member appeared between GET and PUT.
   const body = {
     email_address: email,
     status_if_new: "subscribed" as const,
-    status: "subscribed" as const,
     ...(Object.keys(merge_fields).length ? { merge_fields } : {}),
   };
 
@@ -113,13 +142,24 @@ export async function ensureTftwSubscriber(params: {
   if (!put.ok) {
     const detail =
       (put.json as { detail?: string })?.detail ?? `HTTP ${put.status}`;
+    // Compliance / already-unsubscribed responses → treat as skipped, not failure
+    const lower = detail.toLowerCase();
+    if (
+      lower.includes("compliance") ||
+      lower.includes("unsubscribed") ||
+      lower.includes("cleaned")
+    ) {
+      return { ok: true, outcome: "skipped" };
+    }
     return { ok: false, error: detail };
   }
 
-  if (existing.status === 404) {
-    return { ok: true, outcome: "added" };
+  const putStatus = (put.json as { status?: MemberStatus })?.status;
+  if (putStatus === "unsubscribed" || putStatus === "cleaned") {
+    return { ok: true, outcome: "skipped" };
   }
-  return { ok: true, outcome: "updated" };
+
+  return { ok: true, outcome: "added" };
 }
 
 /** Tag used so we only send the course welcome email once. */

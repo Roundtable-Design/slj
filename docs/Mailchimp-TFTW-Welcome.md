@@ -1,6 +1,6 @@
 # Mailchimp — TFTW welcome + SLJ auto-subscribe
 
-**Last updated:** 18 Sep 2026
+**Last updated:** 20 Oct 2026
 
 ## Audience
 
@@ -10,46 +10,42 @@
 | Audience ID | `d25a712438` |
 | API DC | `us21` |
 | Unsubscribe | https://talksfromthewarehouse.us21.list-manage.com/unsubscribe?u=1c8d690688ecca6278d4b78e4&id=d25a712438 |
-| Default From | `info@talksfromthewarehouse.co.uk` (set via API; was `talksfromthewarehouse@round-table.co.uk`) |
+| Default From | `info@talksfromthewarehouse.co.uk` |
 
-Env (Vercel Production + `.env.local`): `MAILCHIMP_API_KEY`, `MAILCHIMP_AUDIENCE_ID`, optional `MAILCHIMP_UNSUBSCRIBE_URL`.
+Env (Vercel Production + `.env.local`): `MAILCHIMP_API_KEY`, `MAILCHIMP_AUDIENCE_ID`, `MAILCHIMP_WEBHOOK_SECRET`, optional `MAILCHIMP_UNSUBSCRIBE_URL`.
 
-**Rotate the API key** that was pasted in chat (Mailchimp → Account → Extras → API keys), then update env.
+**Ops note (7 Oct 2026):** Production `MAILCHIMP_API_KEY` / `MAILCHIMP_AUDIENCE_ID` had trailing `\n` from a past `vercel env add`, which broke API auth (`403`) and stopped SLJ→TFTW auto-subscribe. Values were re-set clean; `lib/mailchimp.ts` now `.trim()`s env on read.
 
-## Website signup welcome (Mailchimp journey)
+## Website signup welcome (live path)
 
-Draft journey **Welcome new contacts** (id `3747`) — trigger: contact signs up to this audience.
-
-- Subject: `Welcome to Talks From The Warehouse`
-- From / reply-to: `info@talksfromthewarehouse.co.uk`
-- Body (plain): thanks for joining; short talk by email each day; listen at your own pace; unsubscribe in footer. No James name, no course mention.
-
-**Action still needed in Mailchimp UI:** Automations → Welcome new contacts → **Start Journey** (API cannot activate draft journeys). Until started, website form signups will not get this welcome.
-
-## Course signup (SLJ app)
-
-On Auth.js `signIn`, if `emailVerified` is within the last 2 hours:
-
-1. `PUT` member on audience (skip if already subscribed/pending; respect unsubscribed/cleaned)
-2. Send Resend welcome (`lib/course-welcome-email.ts`) From `AUTH_EMAIL_FROM` / `info@…`
-3. Tag member `course-welcome-sent` so it only sends once
-
-Code: [`lib/mailchimp.ts`](../lib/mailchimp.ts), [`lib/course-onboarding.ts`](../lib/course-onboarding.ts), hook in [`auth.ts`](../auth.ts).
-
-## How to test
-
-1. Start the Mailchimp journey (above).
-2. Subscribe a throwaway via the TFTW site form → expect Draft A welcome From `info@…`.
-3. Sign up a new course account (fresh email) → expect Mailchimp add + Draft B Resend; second sign-in should not re-send.
-4. Confirm an `@example.com` e2e user does not hit Mailchimp.
-
-
-## Website welcome via webhook (live path)
-
-Mailchimp list webhook on **subscribe** (user + admin sources; API excluded) posts to:
+Mailchimp list webhook on **subscribe** (user + admin sources; **API excluded**) posts to:
 
 `https://slj.talksfromthewarehouse.co.uk/api/webhooks/mailchimp?secret=…`
 
-which sends the TFTW welcome (Draft A) via Resend From `info@…`.
+→ Resend Draft A From `info@…` (`lib/tftw-welcome-email.ts`).
 
-Leave the Customer Journey **Welcome new contacts** in **draft** to avoid duplicate welcomes, or delete it.
+Leave Customer Journey **Welcome new contacts** (id `3747`) in **draft** (or delete) to avoid duplicate welcomes.
+
+## Course signup (SLJ app)
+
+On Auth.js `signIn` (`lib/course-onboarding.ts`):
+
+1. **Always** `ensureTftwSubscriber` (idempotent; case-insensitive user lookup).
+2. **Never auto-resubscribe past opt-outs** (James, Oct 2026): if Mailchimp already has the address as `unsubscribed` / `cleaned` / `archived` / etc., leave them alone. Only **new** addresses (HTTP 404) are added. API body uses `status_if_new` only — never `status: subscribed` on an existing member (that field force-resubscribes).
+3. Course welcome only when outcome is `added` or `already_subscribed`, `emailVerified` within last 2 hours, and member not tagged `course-welcome-sent`.
+
+Skips `@example.com`. Failures are logged; sign-in never fails because of Mailchimp/Resend.
+
+## Weekly digest recipients
+
+`WEEKLY_DIGEST_TO` = `louis@round-table.co.uk,theodgersfamily@aol.co.uk`  
+(Use `@aol.co.uk` only — not `@aol.com`.)
+
+## How to test
+
+1. Webhook smoke (safe address you control):  
+   `POST /api/webhooks/mailchimp?secret=…` with `type=subscribe` + `data[email]=…` → one TFTW welcome.
+2. Fresh course signup → Mailchimp member + course welcome once; second sign-in does not re-welcome.
+3. Existing course user not on list → next sign-in adds to Mailchimp (no welcome if verify older than 2h).
+4. Previously unsubscribed / cleaned / archived address → SLJ sign-in does **not** change Mailchimp status (no welcome claiming they were added).
+5. `@example.com` e2e user never hits Mailchimp.
