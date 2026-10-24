@@ -24,7 +24,7 @@
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",
     "@neondatabase/serverless": "^1.1.0",
-    "@sentry/nextjs": "^10.69.0",
+    "@sentry/nextjs": "^10.75.2",
     "@vercel/analytics": "^2.0.1",
     "drizzle-orm": "^0.45.2",
     "lucide-react": "^0.577.0",
