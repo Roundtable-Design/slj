@@ -88,3 +88,19 @@ Optional:
 - RLS on all tables containing user data
 - Never log note contents
 - Do not store course content in DB
+
+## Cursor Cloud specific instructions
+
+### Services overview
+This is a single Next.js app with a Supabase cloud backend. There are no Docker containers or local databases to run.
+
+### Environment
+- `.env.local` must exist with `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Without these the middleware crashes with a 500 on every route. For offline work (lint, typecheck, tests, build) these can be placeholder values; for full auth flow testing, real Supabase project credentials are required via `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` secrets.
+- `pnpm install` may warn about ignored build scripts for `esbuild`, `sharp`, and `unrs-resolver`. This is expected and does not affect development — the app runs fine without them.
+
+### Running commands
+All commands are documented in the "Commands (pnpm)" section above. Key notes:
+- `pnpm lint`, `pnpm typecheck`, and `pnpm test` work offline without Supabase credentials.
+- `pnpm build` runs `prebuild` (generates `content/manifest.json` from Markdown files) then `next build`. Works offline.
+- `pnpm dev` starts the dev server on port 3000. Requires `.env.local` with at least placeholder Supabase values.
+- Protected routes (`/course`, `/worksheets`, `/groups`, `/preferences`, `/progress`) redirect to `/auth/sign-in` when not authenticated. Public routes (`/`, `/auth/sign-in`) work without auth.
